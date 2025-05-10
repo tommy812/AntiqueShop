@@ -2,6 +2,8 @@
 
 A full-stack web application for an antiques business, featuring a catalogue of antique items, category management, and administrative tools.
 
+##Licensed
+
 ## Features
 
 - Responsive design optimized for all devices
