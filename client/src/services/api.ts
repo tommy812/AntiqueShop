@@ -1,8 +1,12 @@
 import axios, { AxiosError } from 'axios';
 import { ErrorType, parseApiError } from '../utils/errorHandler';
 
-// API base URL - change this to your production URL in production
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+// API base URL - use environment variable or fallback to relative path in production
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL ||
+  (process.env.NODE_ENV === 'production'
+    ? '/api' // In production, use relative path since both client and server are deployed together
+    : 'http://localhost:5001/api'); // In development, use localhost
 
 // Configuration constants
 const TOKEN_REFRESH_THRESHOLD = 5 * 60 * 1000; // 5 minutes before expiry
@@ -20,9 +24,9 @@ const api = axios.create({
 
 // Request interceptor for adding auth token and CSRF protection
 api.interceptors.request.use(
-  async (config) => {
+  async config => {
     const token = localStorage.getItem('token');
-    
+
     // Add authorization token if available
     if (token) {
       // Check if token is about to expire and refresh if needed
@@ -42,24 +46,24 @@ api.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
-    
+
     // Add CSRF token if available (set by the server in a cookie)
     const csrfToken = getCsrfToken();
     if (csrfToken) {
       config.headers['X-CSRF-Token'] = csrfToken;
     }
-    
+
     // Add request ID for tracing/debugging
     config.headers['X-Request-ID'] = generateRequestId();
-    
+
     return config;
   },
-  (error) => Promise.reject(error)
+  error => Promise.reject(error)
 );
 
 // Response interceptor for handling errors
 api.interceptors.response.use(
-  (response) => response,
+  response => response,
   async (error: AxiosError) => {
     // Parse and standardize error
     const parsedError = parseApiError(error);
@@ -70,16 +74,16 @@ api.interceptors.response.use(
         // Clear authentication data
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        
+
         // Only redirect if we're not already on the login page
         if (window.location.pathname !== '/login') {
           window.location.href = '/login';
         }
         break;
-        
+
       case ErrorType.AUTHORIZATION:
         const errorData = error.response?.data as any;
-        
+
         // Handle token expiration specifically
         if (errorData?.message === 'Token expired') {
           localStorage.removeItem('token');
@@ -90,18 +94,18 @@ api.interceptors.response.use(
           window.location.href = '/unauthorized';
         }
         break;
-        
+
       case ErrorType.NETWORK:
         // Could implement offline detection and retry logic here
         console.error('Network error detected:', parsedError.message);
         break;
-        
+
       case ErrorType.SERVER:
         // Log server errors for monitoring
         console.error('Server error:', parsedError);
         break;
     }
-    
+
     return Promise.reject(parsedError);
   }
 );
@@ -125,10 +129,10 @@ function parseJwt(token: string) {
 // Helper function to determine if token should be refreshed
 function shouldRefreshToken(expiryTimestamp: number): boolean {
   if (!expiryTimestamp) return false;
-  
+
   const expiryTime = expiryTimestamp * 1000; // Convert to milliseconds
   const currentTime = Date.now();
-  
+
   return expiryTime - currentTime < TOKEN_REFRESH_THRESHOLD;
 }
 
@@ -142,7 +146,7 @@ async function refreshToken(): Promise<string | null> {
         withCredentials: true, // Needed for refresh token in cookie
       }
     );
-    
+
     const newToken = response.data.token;
     localStorage.setItem('token', newToken);
     return newToken;
@@ -165,22 +169,19 @@ export async function withRetry<T>(
   baseDelay = 1000
 ): Promise<T> {
   let lastError: any;
-  
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       return await apiFn();
     } catch (error) {
       lastError = error;
-      
+
       // Only retry network errors and 5xx (server) errors
       const parsedError = parseApiError(error);
-      if (
-        parsedError.type !== ErrorType.NETWORK && 
-        parsedError.type !== ErrorType.SERVER
-      ) {
+      if (parsedError.type !== ErrorType.NETWORK && parsedError.type !== ErrorType.SERVER) {
         throw error;
       }
-      
+
       // Exponential backoff
       if (attempt < maxRetries - 1) {
         const delay = baseDelay * Math.pow(2, attempt);
@@ -188,8 +189,8 @@ export async function withRetry<T>(
       }
     }
   }
-  
+
   throw lastError;
 }
 
-export default api; 
+export default api;

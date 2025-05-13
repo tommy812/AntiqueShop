@@ -21,10 +21,15 @@ const settingsRoutes = require('./routes/settings.routes');
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: 'http://localhost:3000',  // Replace with your client URL
-  credentials: true
-}));
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? [process.env.CLIENT_URL || 'https://pischetola.vercel.app', /\.vercel\.app$/]
+        : 'http://localhost:3000',
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -34,12 +39,17 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/pischetola_db';
 console.log('Attempting to connect to MongoDB at:', MONGODB_URI);
-mongoose.connect(MONGODB_URI)
+mongoose
+  .connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB successfully'))
   .catch(err => {
     console.error('MongoDB connection error:', err);
-    console.error('Please ensure MongoDB is installed and running locally or provide a valid MongoDB Atlas connection string in the .env file.');
-    console.error('The application will continue to run, but database functionality will not work.');
+    console.error(
+      'Please ensure MongoDB is installed and running locally or provide a valid MongoDB Atlas connection string in the .env file.'
+    );
+    console.error(
+      'The application will continue to run, but database functionality will not work.'
+    );
   });
 
 // Routes
@@ -62,7 +72,7 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
     message: err.message || 'An unexpected error occurred on the server',
-    error: process.env.NODE_ENV === 'production' ? {} : err
+    error: process.env.NODE_ENV === 'production' ? {} : err,
   });
 });
 

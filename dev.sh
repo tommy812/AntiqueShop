@@ -51,6 +51,11 @@ case "$1" in
     print_message "Deployment complete!" "$GREEN"
     ;;
     
+  deploy-vercel)
+    print_message "Deploying to Vercel..." "$BLUE"
+    ./deploy-vercel.sh
+    ;;
+    
   feature)
     if [ -z "$2" ]; then
       print_message "Please provide a feature name: ./dev.sh feature feature-name" "$RED"
@@ -85,7 +90,8 @@ case "$1" in
     print_message "  setup   - Install all dependencies" "$GREEN"
     print_message "  start   - Start development servers" "$GREEN"
     print_message "  build   - Build the client app" "$GREEN"
-    print_message "  deploy  - Deploy to production" "$GREEN"
+    print_message "  deploy  - Deploy to production (GitHub)" "$GREEN"
+    print_message "  deploy-vercel - Deploy to Vercel" "$GREEN"
     print_message "  feature [name] - Create a new feature branch" "$GREEN"
     print_message "  save [message] - Add and commit changes" "$GREEN"
     print_message "  push    - Push current branch to remote" "$GREEN"
