@@ -2,6 +2,35 @@
 
 A modern web application for Pischetola Antiques showcasing their collection and allowing customers to contact them.
 
+## Features
+
+- Responsive design optimized for all devices
+- Product catalogue with filtering by category and period
+- Featured products and categories on the homepage
+- Detailed product pages with images and specifications
+- Admin dashboard for managing products, categories, and periods
+- Site-wide settings management
+- Contact form and estimate request functionality
+- Cross-browser compatible styling
+- Authentication system with admin privileges
+
+## Tech Stack
+
+- **Frontend**:
+
+  - React
+  - TypeScript
+  - Material UI
+  - React Router
+  - Context API for state management
+
+- **Backend**:
+  - Node.js
+  - Express
+  - MongoDB with Mongoose
+  - JWT Authentication
+  - RESTful API
+
 ## Fast Development Setup
 
 ### Prerequisites
@@ -13,17 +42,20 @@ A modern web application for Pischetola Antiques showcasing their collection and
 ### Initial Setup
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/yourusername/pischetola.git
    cd pischetola
    ```
 
 2. Install all dependencies:
+
    ```bash
    ./dev.sh setup
    ```
-   
+
    Or manually:
+
    ```bash
    npm run install-all
    ```
@@ -33,26 +65,31 @@ A modern web application for Pischetola Antiques showcasing their collection and
 We use a script `dev.sh` to streamline common development tasks:
 
 - **Start development servers**:
+
   ```bash
   ./dev.sh start
   ```
 
 - **Create a new feature branch**:
+
   ```bash
   ./dev.sh feature my-feature-name
   ```
 
 - **Save changes (add & commit)**:
+
   ```bash
   ./dev.sh save "Your commit message"
   ```
 
 - **Push changes to remote**:
+
   ```bash
   ./dev.sh push
   ```
 
 - **Build the client app**:
+
   ```bash
   ./dev.sh build
   ```
@@ -115,4 +152,8 @@ This project uses GitHub Actions for CI/CD. On every push and pull request to th
 2. Make your changes
 3. Create a pull request to merge into `fast-dev`
 4. Once approved, your changes will be merged into `fast-dev`
-5. Periodically, `fast-dev` will be merged into `main` for production 
+5. Periodically, `fast-dev` will be merged into `main` for production
+
+## License
+
+MIT
