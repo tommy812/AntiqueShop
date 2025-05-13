@@ -46,4 +46,9 @@ logs
 # Temp files
 .tmp
 .temp
-*.tgz 
+*.tgz
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-* 
