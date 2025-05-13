@@ -1,11 +1,11 @@
 import axios, { AxiosError } from 'axios';
 import { ErrorType, parseApiError } from '../utils/errorHandler';
 
-// API base URL - use environment variable or fallback to relative path in production
+// API base URL - use environment variable or fallback to mock API for initial client-only deployment
 const API_BASE_URL =
   process.env.REACT_APP_API_URL ||
   (process.env.NODE_ENV === 'production'
-    ? '/api' // In production, use relative path since both client and server are deployed together
+    ? 'https://pischetola-api.vercel.app/api' // Replace with your API URL when backend is deployed
     : 'http://localhost:5001/api'); // In development, use localhost
 
 // Configuration constants
