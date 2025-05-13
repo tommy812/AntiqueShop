@@ -16,6 +16,7 @@ import {
   Tabs,
   Tab,
   Alert,
+  Tooltip,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -23,12 +24,16 @@ import ShareIcon from '@mui/icons-material/Share';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import InfoIcon from '@mui/icons-material/Info';
+import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
 
 // Import API service
 import { getProductById, Product as ProductType } from '../services/productService';
 
 // Import utilities
 import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from '../utils/imageUtils';
+
+// Import custom components
+import ImageGallery from '../components/ImageGallery';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -47,11 +52,7 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={`product-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box sx={{ py: 3 }}>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
     </div>
   );
 }
@@ -72,24 +73,27 @@ const ProductDetail = () => {
   const [error, setError] = useState<string | null>(null);
   const [product, setProduct] = useState<ProductType | null>(null);
   const [activeImage, setActiveImage] = useState<string>('');
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [tabValue, setTabValue] = useState(0);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const [galleryOpen, setGalleryOpen] = useState(false);
 
   // Fetch product data from API
   useEffect(() => {
     const fetchProduct = async () => {
       if (!id) return;
-      
+
       setLoading(true);
       setError(null);
-      
+
       try {
         const productData = await getProductById(id);
         setProduct(productData);
-        
+
         // Set active image to first image if available
         if (productData.images && productData.images.length > 0) {
           setActiveImage(getImageUrl(productData.images[0]));
+          setActiveImageIndex(0);
         }
       } catch (err) {
         console.error('Error fetching product:', err);
@@ -110,7 +114,7 @@ const ProductDetail = () => {
   const handleImageError = (imageKey: string) => {
     setImageErrors(prev => ({
       ...prev,
-      [imageKey]: true
+      [imageKey]: true,
     }));
   };
 
@@ -120,6 +124,17 @@ const ProductDetail = () => {
       return DEFAULT_FALLBACK_IMAGE;
     }
     return getImageUrl(imagePath);
+  };
+
+  // Open gallery with current image
+  const openGallery = (index: number) => {
+    setActiveImageIndex(index);
+    setGalleryOpen(true);
+  };
+
+  // Close gallery
+  const closeGallery = () => {
+    setGalleryOpen(false);
   };
 
   if (loading) {
@@ -139,11 +154,7 @@ const ProductDetail = () => {
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
-        <Button 
-          variant="contained" 
-          color="primary"
-          onClick={() => navigate('/catalogue')}
-        >
+        <Button variant="contained" color="primary" onClick={() => navigate('/catalogue')}>
           Back to Catalogue
         </Button>
       </Container>
@@ -159,11 +170,7 @@ const ProductDetail = () => {
         <Typography variant="body1" sx={{ mb: 4 }}>
           We couldn't find the product you're looking for.
         </Typography>
-        <Button 
-          variant="contained" 
-          color="primary"
-          onClick={() => navigate('/catalogue')}
-        >
+        <Button variant="contained" color="primary" onClick={() => navigate('/catalogue')}>
           Back to Catalogue
         </Button>
       </Container>
@@ -171,42 +178,59 @@ const ProductDetail = () => {
   }
 
   // Extract category and period names
-  const categoryName = typeof product.category === 'object' ? product.category.name : 'Unknown Category';
+  const categoryName =
+    typeof product.category === 'object' ? product.category.name : 'Unknown Category';
   const periodName = typeof product.period === 'object' ? product.period.name : 'Unknown Period';
+
+  // Prepare gallery images
+  const galleryImages = product.images
+    ? product.images.map(img => getImageUrlWithErrorHandling(img))
+    : [];
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Image Gallery Modal */}
+      <ImageGallery
+        images={galleryImages}
+        activeIndex={activeImageIndex}
+        open={galleryOpen}
+        onClose={closeGallery}
+        title={product.name}
+      />
+
       {/* Breadcrumbs */}
       <Breadcrumbs sx={{ mb: 3 }}>
-        <Link 
-          underline="hover" 
-          color="inherit" 
-          href="#" 
-          onClick={(e) => {
+        <Link
+          underline="hover"
+          color="inherit"
+          href="#"
+          onClick={e => {
             e.preventDefault();
             navigate('/');
           }}
         >
           Home
         </Link>
-        <Link 
-          underline="hover" 
-          color="inherit" 
-          href="#" 
-          onClick={(e) => {
+        <Link
+          underline="hover"
+          color="inherit"
+          href="#"
+          onClick={e => {
             e.preventDefault();
             navigate('/catalogue');
           }}
         >
           Catalogue
         </Link>
-        <Link 
-          underline="hover" 
-          color="inherit" 
-          href="#" 
-          onClick={(e) => {
+        <Link
+          underline="hover"
+          color="inherit"
+          href="#"
+          onClick={e => {
             e.preventDefault();
-            navigate(`/catalogue?category=${typeof product.category === 'object' ? product.category._id : ''}`);
+            navigate(
+              `/catalogue?category=${typeof product.category === 'object' ? product.category._id : ''}`
+            );
           }}
         >
           {categoryName}
@@ -216,11 +240,7 @@ const ProductDetail = () => {
 
       {/* Back button - mobile only */}
       {isMobile && (
-        <Button 
-          startIcon={<ArrowBackIcon />} 
-          onClick={() => navigate(-1)}
-          sx={{ mb: 2 }}
-        >
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} sx={{ mb: 2 }}>
           Back
         </Button>
       )}
@@ -228,59 +248,88 @@ const ProductDetail = () => {
       <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 4 }}>
         {/* Left side - Product images */}
         <Box sx={{ width: isMobile ? '100%' : '55%' }}>
-          <Box
-            component="img"
-            src={activeImage}
-            alt={product.name}
-            onError={() => handleImageError('main')}
-            sx={{
-              width: '100%',
-              height: 'auto',
-              borderRadius: 2,
-              boxShadow: theme.shadows[2],
-              mb: 2,
-              objectFit: 'cover',
-              aspectRatio: '4/3',
-            }}
-          />
-          
+          <Box sx={{ position: 'relative' }}>
+            <Box
+              component="img"
+              src={activeImage}
+              alt={product.name}
+              onError={() => handleImageError('main')}
+              onClick={() => openGallery(activeImageIndex)}
+              sx={{
+                width: '100%',
+                height: 'auto',
+                borderRadius: 2,
+                boxShadow: theme.shadows[2],
+                mb: 2,
+                objectFit: 'cover',
+                aspectRatio: '4/3',
+                cursor: 'pointer',
+              }}
+            />
+            <Tooltip title="View fullscreen">
+              <IconButton
+                onClick={() => openGallery(activeImageIndex)}
+                sx={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  },
+                }}
+              >
+                <ZoomOutMapIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+
           <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', py: 1 }}>
-            {product.images && product.images.map((img, index) => {
-              const imageUrl = getImageUrlWithErrorHandling(img);
-              return (
-                <Box
-                  key={index}
-                  component="img"
-                  src={imageUrl}
-                  alt={`${product.name} - View ${index + 1}`}
-                  onClick={() => setActiveImage(imageUrl)}
-                  onError={() => handleImageError(img)}
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 1,
-                    objectFit: 'cover',
-                    cursor: 'pointer',
-                    border: activeImage === imageUrl ? `2px solid ${theme.palette.primary.main}` : `1px solid ${theme.palette.divider}`,
-                    opacity: activeImage === imageUrl ? 1 : 0.7,
-                    transition: 'all 0.2s ease-in-out',
-                    '&:hover': {
-                      opacity: 0.9
-                    }
-                  }}
-                />
-              );
-            })}
+            {product.images &&
+              product.images.map((img, index) => {
+                const imageUrl = getImageUrlWithErrorHandling(img);
+                return (
+                  <Box
+                    key={index}
+                    component="img"
+                    src={imageUrl}
+                    alt={`${product.name} - View ${index + 1}`}
+                    onClick={() => {
+                      setActiveImage(imageUrl);
+                      setActiveImageIndex(index);
+                    }}
+                    onError={() => handleImageError(img)}
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: 1,
+                      objectFit: 'cover',
+                      cursor: 'pointer',
+                      border:
+                        activeImage === imageUrl
+                          ? `2px solid ${theme.palette.primary.main}`
+                          : `1px solid ${theme.palette.divider}`,
+                      opacity: activeImage === imageUrl ? 1 : 0.7,
+                      transition: 'all 0.2s ease-in-out',
+                      '&:hover': {
+                        opacity: 0.9,
+                      },
+                    }}
+                  />
+                );
+              })}
           </Box>
         </Box>
-        
+
         {/* Right side - Product details */}
         <Box sx={{ width: isMobile ? '100%' : '45%' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}
+          >
             <Typography variant="overline" color="text.secondary">
               {categoryName} • {periodName}
             </Typography>
-            
+
             <Box>
               <IconButton size="small" aria-label="favorite">
                 <FavoriteBorderIcon />
@@ -290,55 +339,54 @@ const ProductDetail = () => {
               </IconButton>
             </Box>
           </Box>
-          
-          <Typography variant="h3" component="h1" gutterBottom sx={{ fontFamily: 'Playfair Display' }}>
+
+          <Typography
+            variant="h3"
+            component="h1"
+            gutterBottom
+            sx={{ fontFamily: 'Playfair Display' }}
+          >
             {product.name}
           </Typography>
-          
+
           <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold', mb: 3 }}>
             €{product.price.toLocaleString()}
           </Typography>
-          
+
           <Typography variant="body1" sx={{ mb: 3 }}>
             {product.description}
           </Typography>
-          
+
           <Box sx={{ mb: 3 }}>
-            <Chip 
-              icon={<VerifiedIcon />} 
-              label="Authenticity Guaranteed" 
-              variant="outlined" 
+            <Chip
+              icon={<VerifiedIcon />}
+              label="Authenticity Guaranteed"
+              variant="outlined"
               color="success"
               sx={{ mr: 1, mb: 1 }}
             />
-            <Chip 
-              icon={<LocalShippingIcon />} 
-              label="Worldwide Shipping" 
+            <Chip
+              icon={<LocalShippingIcon />}
+              label="Worldwide Shipping"
               variant="outlined"
               sx={{ mb: 1 }}
             />
           </Box>
-          
-          <Button 
-            variant="contained" 
-            color="primary" 
+
+          <Button
+            variant="contained"
+            color="primary"
             size="large"
             fullWidth
             sx={{ mb: 2, py: 1.5 }}
           >
             Enquire About This Item
           </Button>
-          
-          <Button 
-            variant="outlined" 
-            color="primary" 
-            size="large"
-            fullWidth
-            sx={{ mb: 3 }}
-          >
+
+          <Button variant="outlined" color="primary" size="large" fullWidth sx={{ mb: 3 }}>
             Request Condition Report
           </Button>
-          
+
           <Box sx={{ backgroundColor: 'rgba(0,0,0,0.03)', p: 2, borderRadius: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <InfoIcon color="primary" sx={{ mr: 1, fontSize: 20 }} />
@@ -347,7 +395,8 @@ const ProductDetail = () => {
               </Typography>
             </Box>
             <Typography variant="body2">
-              Our experts are available to answer any questions about this piece and help with delivery options.
+              Our experts are available to answer any questions about this piece and help with
+              delivery options.
             </Typography>
             <Button size="small" sx={{ mt: 1 }}>
               Contact Us
@@ -355,23 +404,23 @@ const ProductDetail = () => {
           </Box>
         </Box>
       </Box>
-      
+
       {/* Product information tabs */}
       <Box sx={{ width: '100%', mt: 6 }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs 
-            value={tabValue} 
-            onChange={handleTabChange} 
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
             aria-label="product information tabs"
-            variant={isMobile ? "scrollable" : "standard"}
-            scrollButtons={isMobile ? "auto" : undefined}
+            variant={isMobile ? 'scrollable' : 'standard'}
+            scrollButtons={isMobile ? 'auto' : undefined}
           >
             <Tab label="Details" {...a11yProps(0)} />
             <Tab label="History & Provenance" {...a11yProps(1)} />
             <Tab label="Delivery & Returns" {...a11yProps(2)} />
           </Tabs>
         </Box>
-        
+
         <TabPanel value={tabValue} index={0}>
           <Grid container spacing={3}>
             {/* Dimensions */}
@@ -385,41 +434,35 @@ const ProductDetail = () => {
                     {`${product.measures.width || 0} × ${product.measures.height || 0} × ${product.measures.depth || 0} ${product.measures.unit || 'cm'} (W × H × D)`}
                   </Typography>
                 </Grid>
-                
+
                 {/* Condition */}
                 <Grid item xs={12} sm={6}>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                     Condition
                   </Typography>
-                  <Typography variant="body1">
-                    {product.condition || 'Not specified'}
-                  </Typography>
+                  <Typography variant="body1">{product.condition || 'Not specified'}</Typography>
                 </Grid>
-                
+
                 {/* Origin */}
                 <Grid item xs={12} sm={6}>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                     Origin
                   </Typography>
-                  <Typography variant="body1">
-                    {product.origin || 'Not specified'}
-                  </Typography>
+                  <Typography variant="body1">{product.origin || 'Not specified'}</Typography>
                 </Grid>
-                
+
                 {/* Period */}
                 <Grid item xs={12} sm={6}>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                     Period
                   </Typography>
-                  <Typography variant="body1">
-                    {periodName}
-                  </Typography>
+                  <Typography variant="body1">{periodName}</Typography>
                 </Grid>
               </>
             )}
           </Grid>
         </TabPanel>
-        
+
         <TabPanel value={tabValue} index={1}>
           <Typography variant="body1" paragraph>
             {product.history || 'No history information available for this item.'}
@@ -435,20 +478,21 @@ const ProductDetail = () => {
             </>
           )}
         </TabPanel>
-        
+
         <TabPanel value={tabValue} index={2}>
           <Typography variant="body1" paragraph>
             {product.delivery || 'Please contact us for delivery options.'}
           </Typography>
           <Typography variant="body1" paragraph>
-            Returns: We offer a 14-day return period for all items. Please contact us to arrange a return.
+            Returns: We offer a 14-day return period for all items. Please contact us to arrange a
+            return.
           </Typography>
         </TabPanel>
       </Box>
-      
+
       {/* Related products section could be added here */}
     </Container>
   );
 };
 
-export default ProductDetail; 
+export default ProductDetail;
