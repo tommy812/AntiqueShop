@@ -25,21 +25,24 @@ import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
-
-// Pages links configuration
-const pages = [
-  { name: 'Home', path: '/' },
-  { name: 'Catalogue', path: '/catalogue' },
-  { name: 'About', path: '/about' },
-  { name: 'Estimate', path: '/estimate' },
-  { name: 'Contact', path: '/contact' },
-];
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Navigation = () => {
   const location = useLocation();
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const { settings } = useSettings();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { t } = useTranslation();
+  
+  // Pages links configuration with translations
+  const pages = [
+    { name: t('navigation.home'), path: '/' },
+    { name: t('navigation.catalogue'), path: '/catalogue' },
+    { name: t('navigation.about'), path: '/about' },
+    { name: t('navigation.estimate'), path: '/estimate' },
+    { name: t('navigation.contact'), path: '/contact' },
+  ];
 
   const handleOpenNavMenu = () => {
     setDrawerOpen(true);
@@ -164,6 +167,11 @@ const Navigation = () => {
                       </ListItemButton>
                     )}
                   </ListItem>
+                  <Divider />
+                  {/* Language switcher for mobile */}
+                  <ListItem>
+                    <LanguageSwitcher />
+                  </ListItem>
                 </List>
               </Box>
             </Drawer>
@@ -280,6 +288,9 @@ const Navigation = () => {
                 Login
               </Button>
             )}
+            
+            {/* Desktop language switcher */}
+            <LanguageSwitcher />
           </Box>
         </Toolbar>
       </Container>

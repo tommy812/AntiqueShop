@@ -4,10 +4,8 @@ import {
   Typography,
   Box,
   Paper,
-  TextField,
   Button,
   Grid,
-  Divider,
   FormControl,
   FormLabel,
   RadioGroup,
@@ -18,13 +16,16 @@ import {
   StepLabel,
   useTheme,
   Alert,
-  InputLabel,
-  MenuItem,
-  Select,
   SelectChangeEvent,
+  CircularProgress,
+  Snackbar,
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+
+// Import our custom form component
+import FormField from '../components/forms/FormField';
+import estimateService from '../services/estimateService';
 
 const categories = [
   'Furniture',
@@ -66,10 +67,16 @@ interface FormData {
   additionalNotes: string;
 }
 
+interface FormErrors {
+  [key: string]: string;
+}
+
 const Estimate: React.FC = () => {
   const theme = useTheme();
   const [activeStep, setActiveStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   
   // Form state
   const [formData, setFormData] = useState<FormData>({
@@ -94,20 +101,126 @@ const Estimate: React.FC = () => {
     additionalNotes: '',
   });
   
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
+  
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
     });
+    
+    // Mark field as touched when user types
+    if (!touched[name]) {
+      setTouched(prev => ({
+        ...prev,
+        [name]: true
+      }));
+    }
+  };
+  
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name } = e.target;
+    
+    // Mark field as touched when user leaves the field
+    setTouched(prev => ({
+      ...prev,
+      [name]: true
+    }));
+    
+    // Validate the form
+    validateStepFields(activeStep);
+  };
+  
+  // Validate fields for current step
+  const validateStepFields = (step: number): boolean => {
+    const newErrors: FormErrors = {};
+    
+    if (step === 0) {
+      // Validate item details
+      if (!formData.itemName.trim()) {
+        newErrors.itemName = 'Item name is required';
+      }
+      
+      if (!formData.category) {
+        newErrors.category = 'Category is required';
+      }
+      
+      if (!formData.description.trim()) {
+        newErrors.description = 'Description is required';
+      } else if (formData.description.trim().length < 10) {
+        newErrors.description = 'Please provide a more detailed description (at least 10 characters)';
+      }
+    }
+    
+    if (step === 1) {
+      // Validate contact information
+      if (!formData.firstName.trim()) {
+        newErrors.firstName = 'First name is required';
+      }
+      
+      if (!formData.lastName.trim()) {
+        newErrors.lastName = 'Last name is required';
+      }
+      
+      if (!formData.email.trim()) {
+        newErrors.email = 'Email is required';
+      } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)) {
+        newErrors.email = 'Invalid email address';
+      }
+      
+      if (!formData.phone.trim()) {
+        newErrors.phone = 'Phone number is required';
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
   
   const handleNext = () => {
+    // Validate current step fields before proceeding
+    if (!isStepValid()) {
+      // Mark all fields in current step as touched
+      const fieldsToValidate = getStepFields(activeStep);
+      const newTouched = { ...touched };
+      
+      fieldsToValidate.forEach(field => {
+        newTouched[field] = true;
+      });
+      
+      setTouched(newTouched);
+      
+      // Force validation to update errors
+      validateStepFields(activeStep);
+      
+      return;
+    }
+    
     if (activeStep === steps.length - 1) {
       // Submit form
-      setSubmitted(true);
-      // In a real app, you would send the form data to your backend here
-      console.log('Form submitted:', formData);
+      setLoading(true);
+      
+      estimateService.createEstimate(formData)
+        .then(() => {
+          setSubmitted(true);
+          setLoading(false);
+          setSnackbar({
+            open: true,
+            message: 'Your estimate request has been submitted successfully!',
+            severity: 'success'
+          });
+        })
+        .catch(error => {
+          console.error('Error submitting estimate request:', error);
+          setLoading(false);
+          setSnackbar({
+            open: true,
+            message: 'There was an error submitting your request. Please try again.',
+            severity: 'error'
+          });
+        });
     } else {
       setActiveStep((prevStep) => prevStep + 1);
     }
@@ -117,569 +230,406 @@ const Estimate: React.FC = () => {
     setActiveStep((prevStep) => prevStep - 1);
   };
   
-  const isStepValid = () => {
-    if (activeStep === 0) {
-      return formData.itemName && formData.category && formData.description;
+  // Get fields that belong to the current step
+  const getStepFields = (step: number): string[] => {
+    if (step === 0) {
+      return ['itemName', 'category', 'period', 'description', 'condition'];
     }
-    if (activeStep === 1) {
-      return (
-        formData.firstName &&
-        formData.lastName &&
-        formData.email &&
-        formData.phone
-      );
+    if (step === 1) {
+      return ['firstName', 'lastName', 'email', 'phone', 'country', 'city', 'preferredContact'];
     }
-    return true;
+    return ['timeframe', 'additionalNotes'];
+  };
+  
+  // Check if current step has validation errors
+  const isStepValid = (): boolean => {
+    // Check if step is valid based on current errors
+    const fieldsToValidate = getStepFields(activeStep);
+    
+    // Only count errors for fields in the current step
+    const stepErrors = Object.keys(errors).filter(key => 
+      fieldsToValidate.includes(key)
+    );
+    
+    return stepErrors.length === 0;
   };
   
   const getStepContent = (step: number) => {
     switch (step) {
       case 0:
         return (
-          <Box>
-            <Typography variant="h5" gutterBottom>
-              Tell us about your item
-            </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              Please provide as much detail as possible about the item you would like us to evaluate.
-            </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <FormField
+                required
+                name="itemName"
+                label="Item Name"
+                value={formData.itemName}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                errors={errors}
+                touched={touched}
+                helperText="Enter a descriptive name"
+              />
+            </Grid>
             
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Item Name"
-                  name="itemName"
-                  value={formData.itemName}
+            <Grid item xs={12} md={6}>
+              <FormField
+                required
+                name="category"
+                label="Category"
+                options={categories.map(cat => ({ value: cat, label: cat }))}
+                value={formData.category}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                errors={errors}
+                touched={touched}
+              />
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <FormField
+                name="period"
+                label="Period/Style"
+                options={periods.map(p => ({ value: p, label: p }))}
+                value={formData.period}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                errors={errors}
+                touched={touched}
+                helperText="Select if known"
+              />
+            </Grid>
+            
+            <Grid item xs={12}>
+              <FormField
+                required
+                name="description"
+                label="Description"
+                type="textarea"
+                value={formData.description}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                errors={errors}
+                touched={touched}
+                helperText="Please include details about size, materials, and any markings or signatures"
+              />
+            </Grid>
+            
+            <Grid item xs={12}>
+              <FormControl component="fieldset">
+                <FormLabel component="legend">Condition</FormLabel>
+                <RadioGroup
+                  row
+                  name="condition"
+                  value={formData.condition}
                   onChange={handleChange}
-                />
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Category</InputLabel>
-                  <Select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    label="Category"
-                  >
-                    {categories.map((category) => (
-                      <MenuItem key={category} value={category}>
-                        {category}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Period</InputLabel>
-                  <Select
-                    name="period"
-                    value={formData.period}
-                    onChange={handleChange}
-                    label="Period"
-                  >
-                    {periods.map((period) => (
-                      <MenuItem key={period} value={period}>
-                        {period}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  multiline
-                  rows={4}
-                  label="Description"
-                  placeholder="Please include details such as materials, dimensions, any markings or signatures, and history if known"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <FormControl component="fieldset">
-                  <FormLabel component="legend">Condition</FormLabel>
-                  <RadioGroup
-                    row
-                    name="condition"
-                    value={formData.condition}
-                    onChange={handleChange}
-                  >
-                    <FormControlLabel
-                      value="excellent"
-                      control={<Radio />}
-                      label="Excellent"
-                    />
-                    <FormControlLabel
-                      value="good"
-                      control={<Radio />}
-                      label="Good"
-                    />
-                    <FormControlLabel
-                      value="fair"
-                      control={<Radio />}
-                      label="Fair"
-                    />
-                    <FormControlLabel
-                      value="poor"
-                      control={<Radio />}
-                      label="Poor"
-                    />
-                  </RadioGroup>
-                </FormControl>
-              </Grid>
-              
-              <Grid item xs={12}>
+                >
+                  <FormControlLabel
+                    value="excellent"
+                    control={<Radio />}
+                    label="Excellent"
+                  />
+                  <FormControlLabel
+                    value="good"
+                    control={<Radio />}
+                    label="Good"
+                  />
+                  <FormControlLabel
+                    value="fair"
+                    control={<Radio />}
+                    label="Fair"
+                  />
+                  <FormControlLabel
+                    value="poor"
+                    control={<Radio />}
+                    label="Poor/Damaged"
+                  />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+            
+            <Grid item xs={12}>
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Photos
+                </Typography>
                 <Button
                   variant="outlined"
                   component="label"
                   startIcon={<CloudUploadIcon />}
-                  sx={{ mt: 1 }}
                 >
-                  Upload Photos
-                  <input
-                    type="file"
-                    hidden
-                    multiple
-                    accept="image/*"
-                  />
+                  Upload Images
+                  <input type="file" hidden multiple accept="image/*" />
                 </Button>
                 <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                  You can upload up to 5 photos. Include different angles and any details of marks, signatures, or damage.
+                  You can upload up to 5 images (max 5MB each)
                 </Typography>
-              </Grid>
+              </Box>
             </Grid>
-          </Box>
+          </Grid>
         );
-      
       case 1:
         return (
-          <Box>
-            <Typography variant="h5" gutterBottom>
-              Contact Information
-            </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              Please provide your contact details so we can get back to you with the estimate.
-            </Typography>
-            
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  required
-                  fullWidth
-                  label="First Name"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                />
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Last Name"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                />
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Email"
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                />
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Country"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleChange}
-                />
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="City"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <FormControl component="fieldset">
-                  <FormLabel component="legend">Preferred Contact Method</FormLabel>
-                  <RadioGroup
-                    row
-                    name="preferredContact"
-                    value={formData.preferredContact}
-                    onChange={handleChange}
-                  >
-                    <FormControlLabel
-                      value="email"
-                      control={<Radio />}
-                      label="Email"
-                    />
-                    <FormControlLabel
-                      value="phone"
-                      control={<Radio />}
-                      label="Phone"
-                    />
-                  </RadioGroup>
-                </FormControl>
-              </Grid>
-              
-              <Grid item xs={12}>
-                <FormControl component="fieldset">
-                  <FormLabel component="legend">Timeframe</FormLabel>
-                  <RadioGroup
-                    row
-                    name="timeframe"
-                    value={formData.timeframe}
-                    onChange={handleChange}
-                  >
-                    <FormControlLabel
-                      value="urgent"
-                      control={<Radio />}
-                      label="Urgent (within 48 hours)"
-                    />
-                    <FormControlLabel
-                      value="standard"
-                      control={<Radio />}
-                      label="Standard (1-2 weeks)"
-                    />
-                    <FormControlLabel
-                      value="not_urgent"
-                      control={<Radio />}
-                      label="Not Urgent"
-                    />
-                  </RadioGroup>
-                </FormControl>
-              </Grid>
-              
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  label="Additional Notes"
-                  placeholder="Any other information you'd like to share"
-                  name="additionalNotes"
-                  value={formData.additionalNotes}
-                  onChange={handleChange}
-                />
-              </Grid>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <FormField
+                required
+                name="firstName"
+                label="First Name"
+                value={formData.firstName}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                errors={errors}
+                touched={touched}
+              />
             </Grid>
-          </Box>
+            
+            <Grid item xs={12} md={6}>
+              <FormField
+                required
+                name="lastName"
+                label="Last Name"
+                value={formData.lastName}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                errors={errors}
+                touched={touched}
+              />
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <FormField
+                required
+                name="email"
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                errors={errors}
+                touched={touched}
+              />
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <FormField
+                required
+                name="phone"
+                label="Phone"
+                value={formData.phone}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                errors={errors}
+                touched={touched}
+              />
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <FormField
+                name="country"
+                label="Country"
+                value={formData.country}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                errors={errors}
+                touched={touched}
+              />
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <FormField
+                name="city"
+                label="City"
+                value={formData.city}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                errors={errors}
+                touched={touched}
+              />
+            </Grid>
+            
+            <Grid item xs={12}>
+              <FormControl component="fieldset">
+                <FormLabel component="legend">Preferred Contact Method</FormLabel>
+                <RadioGroup
+                  row
+                  name="preferredContact"
+                  value={formData.preferredContact}
+                  onChange={handleChange}
+                >
+                  <FormControlLabel
+                    value="email"
+                    control={<Radio />}
+                    label="Email"
+                  />
+                  <FormControlLabel
+                    value="phone"
+                    control={<Radio />}
+                    label="Phone"
+                  />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+          </Grid>
         );
-      
       case 2:
         return (
-          <Box>
-            <Typography variant="h5" gutterBottom>
-              Review Your Information
-            </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              Please review the information you've provided before submitting.
-            </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <FormControl component="fieldset">
+                <FormLabel component="legend">Timeframe</FormLabel>
+                <RadioGroup
+                  name="timeframe"
+                  value={formData.timeframe}
+                  onChange={handleChange}
+                >
+                  <FormControlLabel
+                    value="urgent"
+                    control={<Radio />}
+                    label="Urgent (within 1-2 days)"
+                  />
+                  <FormControlLabel
+                    value="normal"
+                    control={<Radio />}
+                    label="Normal (within a week)"
+                  />
+                  <FormControlLabel
+                    value="not_urgent"
+                    control={<Radio />}
+                    label="Not urgent (no specific timeframe)"
+                  />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
             
-            <Paper elevation={0} sx={{ p: 3, mb: 3, bgcolor: 'background.default' }}>
-              <Typography variant="h6" gutterBottom>
-                Item Details
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={4}>
-                  <Typography variant="body2" color="text.secondary">
-                    Item Name:
-                  </Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <Typography variant="body2">{formData.itemName}</Typography>
-                </Grid>
-                
-                <Grid item xs={4}>
-                  <Typography variant="body2" color="text.secondary">
-                    Category:
-                  </Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <Typography variant="body2">{formData.category}</Typography>
-                </Grid>
-                
-                <Grid item xs={4}>
-                  <Typography variant="body2" color="text.secondary">
-                    Period:
-                  </Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <Typography variant="body2">{formData.period || 'Not specified'}</Typography>
-                </Grid>
-                
-                <Grid item xs={4}>
-                  <Typography variant="body2" color="text.secondary">
-                    Condition:
-                  </Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
-                    {formData.condition}
-                  </Typography>
-                </Grid>
-                
-                <Grid item xs={12}>
-                  <Typography variant="body2" color="text.secondary">
-                    Description:
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    {formData.description}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Paper>
+            <Grid item xs={12}>
+              <FormField
+                name="additionalNotes"
+                label="Additional Notes or Questions"
+                type="textarea"
+                value={formData.additionalNotes}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                errors={errors}
+                touched={touched}
+                helperText="Any other information you'd like to share"
+              />
+            </Grid>
             
-            <Paper elevation={0} sx={{ p: 3, bgcolor: 'background.default' }}>
-              <Typography variant="h6" gutterBottom>
-                Contact Information
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={4}>
-                  <Typography variant="body2" color="text.secondary">
-                    Name:
-                  </Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <Typography variant="body2">
-                    {formData.firstName} {formData.lastName}
-                  </Typography>
-                </Grid>
-                
-                <Grid item xs={4}>
-                  <Typography variant="body2" color="text.secondary">
-                    Email:
-                  </Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <Typography variant="body2">{formData.email}</Typography>
-                </Grid>
-                
-                <Grid item xs={4}>
-                  <Typography variant="body2" color="text.secondary">
-                    Phone:
-                  </Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <Typography variant="body2">{formData.phone}</Typography>
-                </Grid>
-                
-                <Grid item xs={4}>
-                  <Typography variant="body2" color="text.secondary">
-                    Location:
-                  </Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <Typography variant="body2">
-                    {formData.city && formData.country 
-                      ? `${formData.city}, ${formData.country}`
-                      : formData.city || formData.country || 'Not specified'}
-                  </Typography>
-                </Grid>
-                
-                <Grid item xs={4}>
-                  <Typography variant="body2" color="text.secondary">
-                    Preferred Contact:
-                  </Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
-                    {formData.preferredContact}
-                  </Typography>
-                </Grid>
-                
-                <Grid item xs={4}>
-                  <Typography variant="body2" color="text.secondary">
-                    Timeframe:
-                  </Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <Typography variant="body2">
-                    {formData.timeframe === 'urgent' && 'Urgent (within 48 hours)'}
-                    {formData.timeframe === 'standard' && 'Standard (1-2 weeks)'}
-                    {formData.timeframe === 'not_urgent' && 'Not Urgent'}
-                  </Typography>
-                </Grid>
-                
-                {formData.additionalNotes && (
-                  <>
-                    <Grid item xs={4}>
-                      <Typography variant="body2" color="text.secondary">
-                        Additional Notes:
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={8}>
-                      <Typography variant="body2">{formData.additionalNotes}</Typography>
-                    </Grid>
-                  </>
-                )}
-              </Grid>
-            </Paper>
-          </Box>
+            <Grid item xs={12}>
+              <Alert severity="info" sx={{ mt: 2 }}>
+                By submitting this form, you're requesting an appraisal of your item. Our experts will review your information and get back to you within the requested timeframe.
+              </Alert>
+            </Grid>
+            
+            <Grid item xs={12}>
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Review your information:
+                </Typography>
+                <Typography variant="body2">
+                  Please review all the information you've provided before submitting the form. Our appraisal will be based on this information and the photos you've uploaded.
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
         );
-      
       default:
         return 'Unknown step';
     }
   };
   
-  if (submitted) {
-    return (
-      <Container maxWidth="md" sx={{ py: 6 }}>
-        <Paper 
-          elevation={0} 
-          sx={{ 
-            p: 4, 
-            textAlign: 'center',
-            border: `1px solid ${theme.palette.divider}`,
-            borderRadius: 2
-          }}
-        >
-          <CheckCircleOutlineIcon 
-            sx={{ 
-              fontSize: 80, 
-              color: 'success.main',
-              mb: 2 
-            }} 
-          />
-          <Typography variant="h4" gutterBottom>
-            Thank You for Your Request
-          </Typography>
-          <Typography variant="body1" paragraph>
-            We have received your estimate request for "{formData.itemName}".
-          </Typography>
-          <Typography variant="body1" paragraph>
-            Our experts will review the details you've provided and contact you via {formData.preferredContact} within {formData.timeframe === 'urgent' ? '48 hours' : '3-5 business days'}.
-          </Typography>
-          <Typography variant="body1" paragraph>
-            If you have any questions in the meantime, please don't hesitate to contact us at info@pischetolaantiques.com or +39 055 1234567.
-          </Typography>
-          <Button 
-            variant="contained" 
-            color="primary"
-            onClick={() => {
-              setActiveStep(0);
-              setSubmitted(false);
-              setFormData({
-                itemName: '',
-                category: '',
-                period: '',
-                description: '',
-                condition: 'good',
-                firstName: '',
-                lastName: '',
-                email: '',
-                phone: '',
-                country: '',
-                city: '',
-                preferredContact: 'email',
-                timeframe: 'not_urgent',
-                additionalNotes: '',
-              });
-            }}
-            sx={{ mt: 2 }}
-          >
-            Submit Another Request
-          </Button>
-        </Paper>
-      </Container>
-    );
-  }
-
+  // Handler for closing snackbar
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+  
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
-      <Typography variant="h2" gutterBottom sx={{ textAlign: 'center', mb: 4 }}>
+      <Typography variant="h3" gutterBottom sx={{ textAlign: 'center', mb: 2, fontFamily: 'Playfair Display' }}>
         Request an Estimate
       </Typography>
-      <Typography variant="body1" paragraph sx={{ textAlign: 'center', mb: 4, maxWidth: '800px', mx: 'auto' }}>
-        Our team of experts is ready to evaluate your antique items. Please fill out the form below with as much detail as possible for an accurate assessment.
+      <Typography variant="subtitle1" sx={{ textAlign: 'center', mb: 6, maxWidth: 700, mx: 'auto' }}>
+        Fill out this form to request a free estimate for your antique or collectible item.
+        Our experts will evaluate your item and provide you with an estimated value.
       </Typography>
       
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          p: { xs: 2, sm: 4 }, 
-          border: `1px solid ${theme.palette.divider}`,
-          borderRadius: 2
-        }}
+      {/* Success message on submission */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-        
-        <Divider sx={{ mb: 4 }} />
-        
-        <Box sx={{ mb: 4 }}>
-          {getStepContent(activeStep)}
-        </Box>
-        
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Button
-            disabled={activeStep === 0}
-            onClick={handleBack}
-            variant="outlined"
-          >
-            Back
-          </Button>
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+      
+      {submitted ? (
+        <Paper elevation={0} sx={{ p: 4, textAlign: 'center', border: `1px solid ${theme.palette.divider}` }}>
+          <CheckCircleOutlineIcon sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
+          <Typography variant="h5" gutterBottom>
+            Thank You!
+          </Typography>
+          <Typography variant="body1" paragraph>
+            Your estimate request has been submitted successfully.
+          </Typography>
+          <Typography variant="body1" paragraph>
+            One of our experts will review your information and get back to you within the specified timeframe.
+            If you have any urgent questions, please don't hesitate to contact us directly.
+          </Typography>
           <Button
             variant="contained"
             color="primary"
-            onClick={handleNext}
-            disabled={!isStepValid()}
+            onClick={() => window.location.href = '/'}
+            sx={{ mt: 2 }}
           >
-            {activeStep === steps.length - 1 ? 'Submit Request' : 'Next'}
+            Return to Homepage
           </Button>
-        </Box>
-      </Paper>
-      
-      <Box sx={{ mt: 4, px: 2 }}>
-        <Alert severity="info">
-          Your privacy is important to us. The information you provide will only be used to process your estimate request and will not be shared with third parties.
-        </Alert>
-      </Box>
+        </Paper>
+      ) : (
+        <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, border: `1px solid ${theme.palette.divider}` }}>
+          <Stepper activeStep={activeStep} sx={{ mb: 4 }} alternativeLabel>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+          
+          <Box>
+            {getStepContent(activeStep)}
+            
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
+              <Button
+                disabled={activeStep === 0}
+                onClick={handleBack}
+              >
+                Back
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleNext}
+                disabled={loading}
+              >
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  activeStep === steps.length - 1 ? 'Submit Request' : 'Next'
+                )}
+              </Button>
+            </Box>
+          </Box>
+        </Paper>
+      )}
     </Container>
   );
 };

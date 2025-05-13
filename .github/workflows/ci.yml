@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, fast-dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install server dependencies
+      run: npm ci
+      
+    - name: Install client dependencies
+      working-directory: ./client
+      run: npm ci
+      
+    - name: Build client
+      working-directory: ./client
+      run: npm run build
+      
+    - name: Run client tests
+      working-directory: ./client
+      run: npm test -- --passWithNoTests 

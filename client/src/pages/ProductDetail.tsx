@@ -5,9 +5,7 @@ import {
   Grid,
   Box,
   Typography,
-  Divider,
   Button,
-  Paper,
   Breadcrumbs,
   Link,
   Chip,
@@ -23,12 +21,14 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShareIcon from '@mui/icons-material/Share';
 import VerifiedIcon from '@mui/icons-material/Verified';
-import StarIcon from '@mui/icons-material/Star';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import InfoIcon from '@mui/icons-material/Info';
 
 // Import API service
 import { getProductById, Product as ProductType } from '../services/productService';
+
+// Import utilities
+import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from '../utils/imageUtils';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -89,7 +89,7 @@ const ProductDetail = () => {
         
         // Set active image to first image if available
         if (productData.images && productData.images.length > 0) {
-          setActiveImage(`http://localhost:5001${productData.images[0]}`);
+          setActiveImage(getImageUrl(productData.images[0]));
         }
       } catch (err) {
         console.error('Error fetching product:', err);
@@ -115,11 +115,11 @@ const ProductDetail = () => {
   };
 
   // Get image URL with error handling
-  const getImageUrl = (imagePath: string) => {
+  const getImageUrlWithErrorHandling = (imagePath: string) => {
     if (imageErrors[imagePath]) {
-      return 'https://via.placeholder.com/800x600?text=No+Image';
+      return DEFAULT_FALLBACK_IMAGE;
     }
-    return `http://localhost:5001${imagePath}`;
+    return getImageUrl(imagePath);
   };
 
   if (loading) {
@@ -246,7 +246,7 @@ const ProductDetail = () => {
           
           <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', py: 1 }}>
             {product.images && product.images.map((img, index) => {
-              const imageUrl = getImageUrl(img);
+              const imageUrl = getImageUrlWithErrorHandling(img);
               return (
                 <Box
                   key={index}
@@ -261,8 +261,12 @@ const ProductDetail = () => {
                     borderRadius: 1,
                     objectFit: 'cover',
                     cursor: 'pointer',
-                    border: activeImage === imageUrl ? `2px solid ${theme.palette.primary.main}` : 'none',
+                    border: activeImage === imageUrl ? `2px solid ${theme.palette.primary.main}` : `1px solid ${theme.palette.divider}`,
                     opacity: activeImage === imageUrl ? 1 : 0.7,
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      opacity: 0.9
+                    }
                   }}
                 />
               );

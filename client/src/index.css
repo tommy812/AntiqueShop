@@ -11,3 +11,140 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Cross-browser compatibility fixes */
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fix for Safari flexbox issues */
+@supports (-webkit-touch-callout: none) {
+  .safari-flex-fix {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    /* Fix for Safari overflow issues */
+    min-height: 0;
+    min-width: 0;
+  }
+  
+  .safari-img-container {
+    position: relative;
+    overflow: hidden;
+    /* Explicit size to prevent Safari layout shifts */
+    width: 100%;
+    height: 0;
+    padding-top: 66.67%;  /* 3:2 aspect ratio */
+  }
+  
+  .safari-img-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Fix for image rendering in Safari */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}
+
+/* Ensure proper image aspect ratios across browsers */
+.aspect-ratio-box {
+  position: relative;
+  padding-top: 66.67%; /* 3:2 aspect ratio */
+  width: 100%;
+  overflow: hidden;
+  /* Fix for high CPU usage in Safari during scrolling */
+  transform: translateZ(0);
+}
+
+.aspect-ratio-box-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Fix for Firefox scrollbar */
+@-moz-document url-prefix() {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+  }
+  
+  /* Fix for Firefox flexbox height calculation */
+  .firefox-flex-fix {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+  
+  /* Fix for Firefox image rendering */
+  img {
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* Fix for IE11 */
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  .ie-flex-fix {
+    display: block;
+  }
+  
+  /* Grid layout fallback for IE11 */
+  .ie-grid-fallback {
+    display: block;
+    width: 100%;
+  }
+  
+  .ie-grid-fallback > * {
+    display: inline-block;
+    vertical-align: top;
+    width: calc(33.33% - 16px);
+    margin: 8px;
+  }
+  
+  /* Fix for object-fit in IE11 */
+  .ie-object-fit-fix {
+    background-size: cover;
+    background-position: center;
+  }
+  
+  .ie-object-fit-fix img {
+    opacity: 0;
+  }
+}
+
+/* Common cross-browser fixes */
+.cross-browser-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Prevent layout shifts during image load */
+.img-placeholder {
+  background-color: #f0f0f0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fix for flicker on hover transitions in Chrome */
+.hover-fix {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  perspective: 1000px;
+}
+
+/* Address inconsistent button rendering */
+button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}

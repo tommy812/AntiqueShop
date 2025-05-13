@@ -112,14 +112,16 @@ export const isAdmin = (): boolean => {
   return user?.role === 'admin';
 };
 
-export default {
+// Create exportable service object
+const authService = {
   login,
   register,
+  logout,
+  getCurrentUser,
   getProfile,
   updateProfile,
   changePassword,
-  logout,
-  isLoggedIn,
-  getCurrentUser,
   isAdmin
-}; 
+};
+
+export default authService; 

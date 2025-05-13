@@ -1,0 +1,99 @@
+{
+  "navigation": {
+    "home": "Home",
+    "catalogue": "Catalogo",
+    "about": "Chi Siamo",
+    "estimate": "Richiedi Stima",
+    "contact": "Contatti"
+  },
+  "homepage": {
+    "hero": {
+      "title": "Antichità Senza Tempo",
+      "subtitle": "Scopri pezzi unici di valore storico per la tua collezione",
+      "looking_to_buy": "Vuoi Comprare",
+      "looking_to_sell": "Vuoi Vendere",
+      "view_collection": "Vedi Collezione"
+    },
+    "featured_products": {
+      "title": "Prodotti in Evidenza",
+      "view_all": "Vedi Tutti i Prodotti"
+    },
+    "categories": {
+      "title": "Sfoglia per Categoria",
+      "view_all": "Vedi Tutte le Categorie"
+    }
+  },
+  "product": {
+    "dimensions": "Dimensioni",
+    "period": "Periodo",
+    "category": "Categoria",
+    "history": "Storia",
+    "provenance": "Provenienza",
+    "similar_products": "Prodotti Simili",
+    "price": "Prezzo",
+    "contact_us": "Contattaci"
+  },
+  "catalogue": {
+    "title": "La Nostra Collezione",
+    "filters": {
+      "title": "Filtri",
+      "categories": "Categorie",
+      "periods": "Periodi",
+      "clear": "Cancella Filtri"
+    },
+    "sort": {
+      "title": "Ordina per",
+      "newest": "Più recenti",
+      "oldest": "Più datati",
+      "price_low": "Prezzo: dal più basso",
+      "price_high": "Prezzo: dal più alto"
+    },
+    "no_products": "Nessun prodotto trovato in base ai tuoi criteri."
+  },
+  "footer": {
+    "copyright": "© {{year}} Pischetola Antichità. Tutti i diritti riservati.",
+    "privacy": "Informativa Privacy",
+    "terms": "Termini di Servizio"
+  },
+  "contact": {
+    "title": "Contattaci",
+    "subtitle": "Hai domande? Saremo lieti di sentirti.",
+    "form": {
+      "name": "Nome",
+      "email": "Email",
+      "subject": "Oggetto",
+      "message": "Messaggio",
+      "submit": "Invia Messaggio"
+    },
+    "success": "Il tuo messaggio è stato inviato con successo. Ti risponderemo presto.",
+    "error": "Si è verificato un errore nell'invio del messaggio. Riprova."
+  },
+  "estimate": {
+    "title": "Richiedi una Stima",
+    "subtitle": "Vuoi vendere? Invia il tuo oggetto per una valutazione da parte dei nostri esperti.",
+    "form": {
+      "name": "Nome",
+      "email": "Email",
+      "phone": "Numero di Telefono",
+      "item_description": "Descrizione dell'Oggetto",
+      "dimensions": "Dimensioni (opzionale)",
+      "age": "Età/Periodo Approssimativo (se conosciuto)",
+      "photos": "Carica Foto",
+      "additional_info": "Informazioni Aggiuntive",
+      "submit": "Richiedi Stima"
+    },
+    "success": "La tua richiesta di stima è stata inviata. I nostri esperti ti contatteranno a breve.",
+    "error": "Si è verificato un errore nell'invio della richiesta. Riprova."
+  },
+  "about": {
+    "title": "Chi è Pischetola Antichità",
+    "our_story": "La Nostra Storia",
+    "expertise": "La Nostra Esperienza",
+    "team": "Il Nostro Team"
+  },
+  "language": {
+    "select": "Seleziona Lingua",
+    "en": "Inglese",
+    "it": "Italiano"
+  }
+} 

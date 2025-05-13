@@ -10,6 +10,7 @@ router.post('/', messageController.createMessage);
 router.get('/', authenticateToken, isAdmin, messageController.getAllMessages);
 router.get('/stats', authenticateToken, isAdmin, messageController.getMessageStats);
 router.get('/:id', authenticateToken, isAdmin, messageController.getMessageById);
+router.post('/:id/reply', authenticateToken, isAdmin, messageController.replyToMessage);
 router.patch('/:id/status', authenticateToken, isAdmin, messageController.updateMessageStatus);
 router.patch('/:id/toggle-read', authenticateToken, isAdmin, messageController.toggleReadStatus);
 router.delete('/:id', authenticateToken, isAdmin, messageController.deleteMessage);

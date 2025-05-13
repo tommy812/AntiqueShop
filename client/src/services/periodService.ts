@@ -55,7 +55,8 @@ export const toggleFeatured = async (id: string) => {
   return response.data;
 };
 
-export default {
+// Create exportable service object
+const periodService = {
   getAllPeriods,
   getFeaturedPeriods,
   getPeriodById,
@@ -63,4 +64,6 @@ export default {
   updatePeriod,
   deletePeriod,
   toggleFeatured
-}; 
+};
+
+export default periodService; 

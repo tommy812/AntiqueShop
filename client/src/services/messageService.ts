@@ -48,6 +48,12 @@ export const createMessage = async (messageData: Message) => {
   return response.data;
 };
 
+// Reply to a message (admin only)
+export const replyToMessage = async (id: string, reply: string) => {
+  const response = await api.post(`/messages/${id}/reply`, { reply });
+  return response.data;
+};
+
 // Update message status (admin only)
 export const updateMessageStatus = async (id: string, status: string) => {
   const response = await api.patch(`/messages/${id}/status`, { status });
@@ -66,12 +72,16 @@ export const deleteMessage = async (id: string) => {
   return response.data;
 };
 
-export default {
+// Create exportable service object
+const messageService = {
   getAllMessages,
   getMessageStats,
   getMessageById,
   createMessage,
+  replyToMessage,
   updateMessageStatus,
   toggleReadStatus,
   deleteMessage
-}; 
+};
+
+export default messageService; 

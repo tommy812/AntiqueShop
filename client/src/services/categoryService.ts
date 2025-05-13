@@ -53,7 +53,8 @@ export const toggleFeatured = async (id: string) => {
   return response.data;
 };
 
-export default {
+// Create exportable service object
+const categoryService = {
   getAllCategories,
   getFeaturedCategories,
   getCategoryById,
@@ -61,4 +62,6 @@ export default {
   updateCategory,
   deleteCategory,
   toggleFeatured
-}; 
+};
+
+export default categoryService; 

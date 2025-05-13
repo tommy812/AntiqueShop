@@ -1,0 +1,99 @@
+{
+  "navigation": {
+    "home": "Home",
+    "catalogue": "Catalogue",
+    "about": "About",
+    "estimate": "Get an Estimate",
+    "contact": "Contact"
+  },
+  "homepage": {
+    "hero": {
+      "title": "Timeless Antiques",
+      "subtitle": "Discover unique heritage pieces for your collection",
+      "looking_to_buy": "Looking to Buy",
+      "looking_to_sell": "Looking to Sell",
+      "view_collection": "View Collection"
+    },
+    "featured_products": {
+      "title": "Featured Products",
+      "view_all": "View All Products"
+    },
+    "categories": {
+      "title": "Browse by Category",
+      "view_all": "View All Categories"
+    }
+  },
+  "product": {
+    "dimensions": "Dimensions",
+    "period": "Period",
+    "category": "Category",
+    "history": "History",
+    "provenance": "Provenance",
+    "similar_products": "Similar Products",
+    "price": "Price",
+    "contact_us": "Contact Us"
+  },
+  "catalogue": {
+    "title": "Our Collection",
+    "filters": {
+      "title": "Filters",
+      "categories": "Categories",
+      "periods": "Periods",
+      "clear": "Clear Filters"
+    },
+    "sort": {
+      "title": "Sort by",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "price_low": "Price: Low to High",
+      "price_high": "Price: High to Low"
+    },
+    "no_products": "No products found matching your criteria."
+  },
+  "footer": {
+    "copyright": "© {{year}} Pischetola Antiques. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Have questions? We'd love to hear from you.",
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "subject": "Subject",
+      "message": "Message",
+      "submit": "Send Message"
+    },
+    "success": "Your message has been sent successfully. We'll get back to you soon.",
+    "error": "There was an error sending your message. Please try again."
+  },
+  "estimate": {
+    "title": "Get an Estimate",
+    "subtitle": "Looking to sell? Submit your item for an expert evaluation.",
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone Number",
+      "item_description": "Item Description",
+      "dimensions": "Dimensions (optional)",
+      "age": "Approximate Age/Period (if known)",
+      "photos": "Upload Photos",
+      "additional_info": "Additional Information",
+      "submit": "Request Estimate"
+    },
+    "success": "Your estimate request has been submitted. Our experts will contact you shortly.",
+    "error": "There was an error submitting your request. Please try again."
+  },
+  "about": {
+    "title": "About Pischetola Antiques",
+    "our_story": "Our Story",
+    "expertise": "Our Expertise",
+    "team": "Our Team"
+  },
+  "language": {
+    "select": "Select Language",
+    "en": "English",
+    "it": "Italian"
+  }
+} 

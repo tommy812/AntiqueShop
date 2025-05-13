@@ -80,7 +80,8 @@ export const updateThemeSettings = async (settings: ThemeSettings) => {
   }
 };
 
-export default {
+// Create exportable service object
+const themeService = {
   getActiveTheme,
   getAllThemes,
   createTheme,
@@ -89,4 +90,6 @@ export default {
   deleteTheme,
   getThemeSettings,
   updateThemeSettings,
-}; 
+};
+
+export default themeService; 

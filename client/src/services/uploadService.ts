@@ -52,8 +52,11 @@ export const deleteFile = async (filename: string): Promise<{ message: string }>
   return response.data;
 };
 
-export default {
+// Create exportable service object
+const uploadService = {
   uploadSingleImage,
   uploadMultipleImages,
   deleteFile
-}; 
+};
+
+export default uploadService; 

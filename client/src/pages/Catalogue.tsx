@@ -38,6 +38,9 @@ import { getProducts, ProductFilters, Product } from '../services/productService
 import { getAllCategories, Category } from '../services/categoryService';
 import { getAllPeriods, Period } from '../services/periodService';
 
+// Import utilities
+import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from '../utils/imageUtils';
+
 // Price ranges
 const PRICE_RANGES = [
   { label: 'Any Price', min: undefined, max: undefined },
@@ -67,7 +70,8 @@ const Catalogue = () => {
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
-    total: 0
+    totalItems: 0,
+    itemsPerPage: 12
   });
   
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -554,7 +558,7 @@ const Catalogue = () => {
           {/* Results count and sorting */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="body2" color="text.secondary">
-              {loading ? 'Loading products...' : `Showing ${products.length} of ${pagination.total} items`}
+              {loading ? 'Loading products...' : `Showing ${products.length} of ${pagination.totalItems} items`}
             </Typography>
           </Box>
           
@@ -605,7 +609,7 @@ const Catalogue = () => {
                   <Box 
                     sx={{ 
                       position: 'relative',
-                      paddingTop: '66.67%', // 2:3 aspect ratio
+                      paddingTop: '75%', // 4:3 aspect ratio (more standard for product images)
                       width: '100%',
                       overflow: 'hidden'
                     }}
@@ -623,10 +627,10 @@ const Catalogue = () => {
                       }}
                       image={
                         imageErrors[product._id || ''] 
-                          ? 'https://via.placeholder.com/300x200?text=No+Image'
+                          ? DEFAULT_FALLBACK_IMAGE
                           : product.images && product.images.length > 0 
-                            ? `http://localhost:5001${product.images[0]}`
-                            : 'https://via.placeholder.com/300x200?text=No+Image'
+                            ? getImageUrl(product.images[0])
+                            : DEFAULT_FALLBACK_IMAGE
                       }
                       onError={() => handleImageError(product._id || '')}
                       alt={product.name}
@@ -637,7 +641,7 @@ const Catalogue = () => {
                     p: 2, 
                     display: 'flex', 
                     flexDirection: 'column',
-                    height: '180px' 
+                    minHeight: '180px', // Changed from fixed height to minHeight for better responsiveness
                   }}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                       {typeof product.category === 'object' ? product.category.name : 'Unknown Category'} • 
@@ -649,7 +653,7 @@ const Catalogue = () => {
                       sx={{ 
                         fontWeight: 'medium', 
                         mb: 1,
-                        height: '48px',
+                        minHeight: '48px',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         display: '-webkit-box',
@@ -664,7 +668,7 @@ const Catalogue = () => {
                       color="text.secondary" 
                       sx={{
                         mb: 1,
-                        height: '40px',
+                        minHeight: '40px',
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',

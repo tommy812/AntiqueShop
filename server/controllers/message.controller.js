@@ -1,5 +1,16 @@
 const Message = require('../models/message.model');
 const Product = require('../models/product.model');
+const nodemailer = require('nodemailer');
+const config = require('../config/email.config');
+
+// Create a transport for sending emails
+const transporter = nodemailer.createTransport({
+  service: config.EMAIL_SERVICE,
+  auth: {
+    user: config.EMAIL_USER,
+    pass: config.EMAIL_PASSWORD
+  }
+});
 
 // Get all messages with pagination and filtering
 exports.getAllMessages = async (req, res) => {
@@ -239,6 +250,44 @@ exports.getMessageStats = async (req, res) => {
       replied,
       closed,
       dailyMessages
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Reply to a message
+exports.replyToMessage = async (req, res) => {
+  try {
+    const message = await Message.findById(req.params.id);
+    if (!message) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+    
+    // Mark as read and update status
+    message.isRead = true;
+    message.status = 'replied';
+    await message.save();
+    
+    // Send email to customer
+    const customerEmail = {
+      from: config.EMAIL_USER,
+      to: message.email,
+      subject: `RE: ${message.subject} - Pischetola Antiques`,
+      html: `
+        <h2>Response to Your Message</h2>
+        <p>Dear ${message.name},</p>
+        <div>${req.body.reply}</div>
+        <p>If you have any questions, please don't hesitate to contact us.</p>
+        <p>Best regards,<br>Pischetola Antiques Team</p>
+      `
+    };
+    
+    await transporter.sendMail(customerEmail);
+    
+    res.status(200).json({ 
+      message: 'Reply sent successfully',
+      updatedMessage: message
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

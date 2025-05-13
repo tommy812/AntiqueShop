@@ -73,8 +73,11 @@ export const resetSettings = async (): Promise<SiteSettings> => {
   }
 };
 
-export default {
+// Create exportable service object
+const settingsService = {
   getSettings,
   updateSettings,
   resetSettings
-}; 
+};
+
+export default settingsService; 

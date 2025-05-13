@@ -1,112 +1,118 @@
 # Pischetola Antiques
 
-A full-stack web application for an antiques business, featuring a catalogue of antique items, category management, and administrative tools.
+A modern web application for Pischetola Antiques showcasing their collection and allowing customers to contact them.
 
-## Features
-
-- Responsive design optimized for all devices
-- Product catalogue with filtering by category and period
-- Featured products and categories on the homepage
-- Detailed product pages with images and specifications
-- Admin dashboard for managing products, categories, and periods
-- Site-wide settings management
-- Contact form and estimate request functionality
-- Cross-browser compatible styling
-- Authentication system with admin privileges
-
-## Tech Stack
-
-- **Frontend**:
-  - React 
-  - TypeScript
-  - Material UI
-  - React Router
-  - Context API for state management
-
-- **Backend**:
-  - Node.js
-  - Express
-  - MongoDB with Mongoose
-  - JWT Authentication
-  - RESTful API
-
-## Setup Instructions
+## Fast Development Setup
 
 ### Prerequisites
 
-- Node.js (v14 or later)
-- MongoDB (local or Atlas)
+- Node.js (v16 or higher)
+- npm (v7 or higher)
 - Git
 
-### Installation
+### Initial Setup
 
 1. Clone the repository:
-   ```
-   git clone https://github.com/tommy812/AntiqueShop.git
-   cd AntiqueShop
-   ```
-
-2. Install server dependencies:
-   ```
-   cd server
-   npm install
+   ```bash
+   git clone https://github.com/yourusername/pischetola.git
+   cd pischetola
    ```
 
-3. Install client dependencies:
+2. Install all dependencies:
+   ```bash
+   ./dev.sh setup
    ```
-   cd ../client
-   npm install
-   ```
-
-4. Create environment variables:
    
-   Create a `.env` file in the server directory:
-   ```
-   MONGODB_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret
-   PORT=5001
+   Or manually:
+   ```bash
+   npm run install-all
    ```
 
-### Running the Application
+### Development Workflow
 
-1. Start the server:
-   ```
-   cd server
-   npm start
-   ```
+We use a script `dev.sh` to streamline common development tasks:
 
-2. In a separate terminal, start the client:
-   ```
-   cd client
-   npm start
-   ```
+- **Start development servers**:
+  ```bash
+  ./dev.sh start
+  ```
 
-3. Open your browser and navigate to `http://localhost:3000`
+- **Create a new feature branch**:
+  ```bash
+  ./dev.sh feature my-feature-name
+  ```
+
+- **Save changes (add & commit)**:
+  ```bash
+  ./dev.sh save "Your commit message"
+  ```
+
+- **Push changes to remote**:
+  ```bash
+  ./dev.sh push
+  ```
+
+- **Build the client app**:
+  ```bash
+  ./dev.sh build
+  ```
+
+- **Deploy to production**:
+  ```bash
+  ./dev.sh deploy
+  ```
+
+### Git Aliases
+
+For faster Git operations, the following aliases are configured:
+
+- `git s` - Short status
+- `git cm "message"` - Commit with message
+- `git aa` - Add all changes
+- `git p` - Push
+- `git po` - Push to origin
+- `git pf` - Force push with lease
+- `git co branch` - Checkout branch
+- `git cb new-branch` - Create and checkout new branch
+- `git up` - Fetch and rebase from origin/main
+- `git save "message"` - Add all and commit
+
+### npm Scripts
+
+- `npm run dev` - Start both client and server
+- `npm run server` - Start only the server
+- `npm run client` - Start only the client
+- `npm run build` - Build the client app
+- `npm run seed` - Run database seeding
+- `npm run test` - Run client tests
+- `npm run lint` - Run linting
 
 ## Project Structure
 
 ```
-/
-├── client/                  # React frontend
-│   ├── public/              # Static files
-│   └── src/                 # Source files
-│       ├── components/      # Reusable components
-│       ├── contexts/        # React contexts
-│       ├── pages/           # Page components
-│       ├── services/        # API services
-│       └── App.tsx          # Main App component
-│
-├── server/                  # Node.js backend
-│   ├── controllers/         # Route controllers
-│   ├── middleware/          # Express middleware
-│   ├── models/              # Mongoose models
-│   ├── routes/              # API routes
-│   ├── uploads/             # Uploaded files
-│   └── server.js            # Server entry point
-│
-└── README.md                # Project documentation
+pischetola/
+├── .github/                # GitHub configuration
+│   ├── workflows/          # GitHub Actions workflows
+│   └── PULL_REQUEST_TEMPLATE/  # PR templates
+├── client/                 # Frontend React application
+├── server/                 # Backend Express API
+├── dev.sh                  # Development helper script
+├── package.json            # Root package.json
+└── README.md               # This file
 ```
 
-## License
+## Continuous Integration
 
-MIT 
+This project uses GitHub Actions for CI/CD. On every push and pull request to the `main` branch, the workflow will:
+
+1. Install dependencies
+2. Build the client
+3. Run tests
+
+## Contributing
+
+1. Create a feature branch from `fast-dev`
+2. Make your changes
+3. Create a pull request to merge into `fast-dev`
+4. Once approved, your changes will be merged into `fast-dev`
+5. Periodically, `fast-dev` will be merged into `main` for production 

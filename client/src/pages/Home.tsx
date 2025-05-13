@@ -19,6 +19,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { categoryService, productService } from '../services';
 import { Category } from '../services/categoryService';
 import { Product } from '../services/productService';
+import { useTranslation } from 'react-i18next';
 
 // Placeholder hero image (replace with actual image later)
 const heroImage = 'https://images.unsplash.com/photo-1574642344377-3ba2a7a5e822?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80';
@@ -39,6 +40,7 @@ const HeroSection = styled(Box)(({ theme }) => ({
 }));
 
 const Home = () => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const [featuredCategories, setFeaturedCategories] = useState<Category[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -116,7 +118,7 @@ const Home = () => {
           mb: 2,
           textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
         }}>
-          Pischetola Antiques
+          {t('homepage.hero.title')}
         </Typography>
         <Typography variant="h4" sx={{ 
           maxWidth: '800px', 
@@ -124,7 +126,7 @@ const Home = () => {
           fontWeight: 400,
           textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
         }}>
-          Discover timeless elegance and historical craftsmanship
+          {t('homepage.hero.subtitle')}
         </Typography>
         <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
           <Button 
@@ -141,7 +143,7 @@ const Home = () => {
               py: 1.5
             }}
           >
-            Looking to Buy
+            {t('homepage.hero.looking_to_buy')}
           </Button>
           <Button 
             variant="outlined" 
@@ -161,7 +163,7 @@ const Home = () => {
               }
             }}
           >
-            Looking to Sell
+            {t('homepage.hero.looking_to_sell')}
           </Button>
         </Box>
       </HeroSection>
@@ -170,7 +172,7 @@ const Home = () => {
         {/* Featured Products Section */}
         <Box sx={{ mb: { xs: 5, md: 8 } }}>
           <Typography variant="h2" gutterBottom sx={{ mb: { xs: 3, md: 4 }, textAlign: 'center', fontSize: { xs: '1.75rem', md: '2.5rem' } }}>
-            Featured Products
+            {t('homepage.featured_products.title')}
           </Typography>
           
           {loading ? (
@@ -299,7 +301,7 @@ const Home = () => {
 
         <Box sx={{ mb: { xs: 5, md: 8 } }}>
           <Typography variant="h2" gutterBottom sx={{ mb: { xs: 3, md: 4 }, textAlign: 'center', fontSize: { xs: '1.75rem', md: '2.5rem' } }}>
-            Featured Categories
+            {t('homepage.categories.title')}
           </Typography>
           
           {loading ? (
@@ -393,7 +395,7 @@ const Home = () => {
                           endIcon={<ArrowForwardIcon />}
                           sx={{ pl: { xs: 0, md: 2 } }}
                         >
-                          View Collection
+                          {t('homepage.hero.view_collection')}
                         </Button>
                       </Box>
                     </CardContent>

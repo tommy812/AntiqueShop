@@ -20,7 +20,8 @@ export {
   uploadService
 };
 
-export default {
+// Create exportable services object
+const services = {
   api,
   authService,
   categoryService,
@@ -30,4 +31,6 @@ export default {
   settingsService,
   themeService,
   uploadService
-}; 
+};
+
+export default services; 
