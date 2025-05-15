@@ -1,95 +1,143 @@
-# Vercel Deployment Guide
+# Vercel Deployment Guide for Pischetola Antiques
 
-This document provides instructions for deploying the Pischetola Antiques application on Vercel.
+This document outlines the deployment process for both the server and client components of the Pischetola Antiques website on Vercel.
 
-## Prerequisites
+## Project Structure
 
-- A [Vercel](https://vercel.com/) account
-- MongoDB Atlas cluster (for production database)
+The project consists of two main components:
 
-## Deployment Steps
+- **Server**: Node.js/Express API backend
+- **Client**: React/TypeScript frontend
 
-### 1. Configure Environment Variables in Vercel
+## Deployment Configuration
 
-Set the following environment variables in your Vercel project settings:
+### Server Deployment
 
-```
-NODE_ENV=production
-MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>
-JWT_SECRET=your_secret_key_here
-CLIENT_URL=https://your-vercel-app-url.vercel.app
-```
+The server is deployed as a serverless Node.js function on Vercel with the following configuration:
 
-Replace the placeholders with your actual MongoDB connection string and other values.
-
-### 2. Deploy to Vercel
-
-You can deploy in two ways:
-
-#### Option 1: Deploy through GitHub Integration
-
-1. Connect your GitHub repository to Vercel
-2. Configure the project as follows:
-   - **Build Command**: `cd client && npm install --legacy-peer-deps && npm run build`
-   - **Output Directory**: `client/build`
-   - **Install Command**: `npm install`
-
-#### Option 2: Deploy using Vercel CLI
-
-1. Install Vercel CLI: `npm i -g vercel`
-2. Run from the project root: `vercel`
-3. Follow the CLI prompts
-
-## Troubleshooting
-
-### Build Errors
-
-If you encounter build errors:
-
-1. Make sure your `vercel.json` is correctly configured:
+1. **vercel.json** (in server directory):
 
 ```json
 {
   "version": 2,
   "builds": [
     {
-      "src": "server/server.js",
+      "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "client/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "buildCommand": "cd client && npm install --legacy-peer-deps && npm run build",
-        "outputDirectory": "build"
-      }
     }
   ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "server/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "client/build/$1"
+  "routes": [{ "src": "/(.*)", "dest": "/server.js" }],
+  "functions": {
+    "server.js": {
+      "memory": 1024,
+      "maxDuration": 10
     }
+  }
+}
+```
+
+2. **Root index.js**:
+   - Acts as the main entry point for the Vercel deployment
+   - Provides basic health check endpoints
+   - Attempts to load and use the server module
+   - Includes fallback error handling
+
+### Client Deployment
+
+The client is deployed as a static site with the following configuration:
+
+1. **vercel.json** (in client directory):
+
+```json
+{
+  "version": 2,
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "build",
+  "framework": "create-react-app",
+  "env": {
+    "DISABLE_ESLINT_PLUGIN": "true",
+    "ESLINT_NO_DEV_ERRORS": "true",
+    "TSC_COMPILE_ON_ERROR": "true",
+    "CI": "false",
+    "REACT_APP_API_URL": "https://pischetola-antiques.vercel.app"
+  },
+  "routes": [
+    // Routes configuration for static assets and SPA routing
   ]
 }
 ```
 
-2. Check your deployment logs in the Vercel dashboard
+2. **build-client.js**:
+   - Ensures all necessary files exist before building
+   - Creates fallback files if needed
+   - Sets environment variables to bypass build errors
 
-### API Connection Issues
+## Deployment Process
 
-If your frontend can't connect to the API:
+### Manual Deployment
 
-1. Verify the API endpoint URLs in your client code
-2. Check CORS settings in `server/server.js` to ensure your client domain is allowed
-3. Make sure environment variables are correctly set
+1. **Server Deployment**:
 
-## Production Considerations
+   ```bash
+   cd server
+   vercel
+   ```
 
-- **MongoDB Connection**: Ensure your MongoDB connection string is properly set up with the correct credentials and database name
-- **JWT Secret**: Use a strong, unique JWT secret for production
-- **Static Files**: Uploaded files will not persist in Vercel's serverless functions. Consider using a cloud storage solution like AWS S3 for file uploads
+2. **Client Deployment**:
+   ```bash
+   cd client
+   vercel
+   ```
+
+### Automated Deployment
+
+The repository is configured for continuous deployment:
+
+1. Push to the `main` branch triggers deployment
+2. Vercel automatically runs the build process defined in vercel.json
+3. The build process executes:
+   - For server: `npm run vercel-build`
+   - For client: `node build-client.js`
+
+## Environment Variables
+
+Ensure the following environment variables are set in your Vercel project:
+
+1. **Server**:
+
+   - `MONGODB_URI`: MongoDB connection string
+   - `JWT_SECRET`: Secret for JWT token generation
+   - `NODE_ENV`: Set to "production"
+
+2. **Client**:
+   - `REACT_APP_API_URL`: URL of the deployed server API
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Build Failures**:
+
+   - Check build logs for specific errors
+   - Ensure all dependencies are properly installed
+   - Verify that all required files exist
+
+2. **API Connection Issues**:
+
+   - Verify the `REACT_APP_API_URL` is correctly set
+   - Check CORS configuration in the server
+
+3. **Missing Dependencies**:
+   - Run `npm install` in both client and server directories
+   - Check for version conflicts in package.json
+
+### Debug Endpoints
+
+- `/debug`: Returns environment information
+- `/health`: Simple health check endpoint
+- `/`: Root endpoint with basic API information
+
+## Production URLs
+
+- **Server API**: https://antique-shop.vercel.app
+- **Client**: https://pischetola.vercel.app

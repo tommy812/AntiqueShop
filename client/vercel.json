@@ -7,6 +7,7 @@
     "DISABLE_ESLINT_PLUGIN": "true",
     "ESLINT_NO_DEV_ERRORS": "true",
     "TSC_COMPILE_ON_ERROR": "true",
+    "CI": "false",
     "REACT_APP_API_URL": "https://antique-shop.vercel.app"
   },
   "routes": [

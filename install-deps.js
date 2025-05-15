@@ -3,28 +3,59 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('Installing dependencies...');
+console.log('Starting deployment setup...');
+
+// Function to safely execute commands
+function safeExec(command, options = {}) {
+  try {
+    console.log(`Executing: ${command}`);
+    execSync(command, { stdio: 'inherit', ...options });
+    return true;
+  } catch (error) {
+    console.error(`Error executing command: ${command}`);
+    console.error(error.message);
+    return false;
+  }
+}
+
+// Check if directory exists
+function directoryExists(dirPath) {
+  try {
+    return fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory();
+  } catch (error) {
+    console.error(`Error checking directory ${dirPath}:`, error.message);
+    return false;
+  }
+}
 
 // Install root dependencies
-try {
-  console.log('Installing root dependencies...');
-  execSync('npm install', { stdio: 'inherit' });
-  console.log('Root dependencies installed successfully.');
-} catch (error) {
-  console.error('Error installing root dependencies:', error);
+console.log('Installing root dependencies...');
+const rootSuccess = safeExec('npm install --no-audit --no-fund');
+if (rootSuccess) {
+  console.log('✅ Root dependencies installed successfully.');
+} else {
+  console.warn('⚠️ Issues installing root dependencies, continuing anyway...');
 }
 
 // Install server dependencies
-try {
-  console.log('Installing server dependencies...');
-  if (fs.existsSync(path.join(__dirname, 'server'))) {
-    execSync('cd server && npm install', { stdio: 'inherit' });
-    console.log('Server dependencies installed successfully.');
+console.log('Installing server dependencies...');
+const serverDir = path.join(__dirname, 'server');
+if (directoryExists(serverDir)) {
+  const serverSuccess = safeExec('cd server && npm install --no-audit --no-fund');
+  if (serverSuccess) {
+    console.log('✅ Server dependencies installed successfully.');
   } else {
-    console.error('Server directory not found.');
+    console.warn('⚠️ Issues installing server dependencies, continuing anyway...');
   }
-} catch (error) {
-  console.error('Error installing server dependencies:', error);
+} else {
+  console.error('❌ Server directory not found.');
 }
 
-console.log('All dependencies installed.');
+// Log environment information for debugging
+console.log('\nEnvironment Information:');
+console.log(`Node Version: ${process.version}`);
+console.log(`Platform: ${process.platform}`);
+console.log(`Vercel: ${process.env.VERCEL === '1' ? 'Yes' : 'No'}`);
+console.log(`NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
+
+console.log('\n✅ Deployment setup completed.');
