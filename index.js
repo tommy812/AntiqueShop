@@ -3,26 +3,17 @@ try {
   // Import the server handler
   const serverHandler = require('./server/server.js');
 
-  // Create a simple Express app for debugging
-  const express = require('express');
-  const app = express();
-
-  // Add a debug endpoint
-  app.get('/debug', (req, res) => {
-    res.json({
-      status: 'Debug endpoint working',
-      timestamp: new Date().toISOString(),
-      env: process.env.NODE_ENV || 'not set',
-      vercelEnv: process.env.VERCEL_ENV || 'not set',
-      nodeVersion: process.version,
-    });
-  });
-
   // Export the handler for Vercel serverless functions
   module.exports = async (req, res) => {
-    // Handle debug endpoint directly
+    // Simple debug endpoint that doesn't require Express
     if (req.url === '/debug') {
-      return app._router.handle(req, res);
+      return res.json({
+        status: 'Debug endpoint working',
+        timestamp: new Date().toISOString(),
+        env: process.env.NODE_ENV || 'not set',
+        vercelEnv: process.env.VERCEL_ENV || 'not set',
+        nodeVersion: process.version,
+      });
     }
 
     try {

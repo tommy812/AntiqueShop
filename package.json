@@ -2,13 +2,13 @@
   "name": "pischetola-antiques",
   "version": "1.0.0",
   "description": "Pischetola Antiques Website",
-  "main": "server/server.js",
+  "main": "index.js",
   "scripts": {
     "start": "node server/server.js",
     "server": "nodemon server/server.js",
     "client": "cd client && npm start",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "build": "cd server && npm install",
+    "build": "npm install",
     "install-all": "npm install && cd client && npm install && cd ../server && npm install",
     "seed": "cd server && npm run seed",
     "test": "cd client && npm test",
@@ -30,6 +30,16 @@
   ],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.16.0",
+    "mongoose": "^7.5.0",
+    "multer": "^1.4.5-lts.1"
+  },
   "devDependencies": {
     "concurrently": "^8.2.0",
     "husky": "^8.0.3",

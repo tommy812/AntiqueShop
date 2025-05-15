@@ -1,8 +1,6 @@
-# Completely ignore client directory and its contents
-client
-client/
-client/*
-client/**/*
+# Ignore client directory since it's deployed separately
+client/build/
+client/node_modules/
 
 # Ignore development files
 .git/
