@@ -63,7 +63,7 @@ const periodService = {
   createPeriod,
   updatePeriod,
   deletePeriod,
-  toggleFeatured
+  toggleFeatured,
 };
 
-export default periodService; 
+export default periodService;

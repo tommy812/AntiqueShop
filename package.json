@@ -8,12 +8,14 @@
     "server": "nodemon server/server.js",
     "client": "cd client && npm start",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "build": "cd client && npm run build",
+    "build": "cd client && npm install && npm run build",
     "install-all": "npm install && cd client && npm install && cd ../server && npm install",
     "seed": "cd server && npm run seed",
     "test": "cd client && npm test",
     "lint": "cd client && npm run lint",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "vercel-build-helper": "node vercel-build.js",
+    "vercel-build": "npm run vercel-build-helper && npm install && cd client && npm install --legacy-peer-deps && npm run build && cd ../server && npm install"
   },
   "repository": {
     "type": "git",
@@ -34,6 +36,9 @@
     "lint-staged": "^15.0.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.5.3"
+  },
+  "engines": {
+    "node": ">=18.x"
   },
   "husky": {
     "hooks": {

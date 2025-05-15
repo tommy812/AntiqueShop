@@ -19,30 +19,30 @@ export interface UploadResponse {
 export const uploadSingleImage = async (file: File): Promise<UploadResponse> => {
   const formData = new FormData();
   formData.append('image', file);
-  
+
   const response = await api.post('/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   });
-  
+
   return response.data;
 };
 
 // Upload multiple images
 export const uploadMultipleImages = async (files: File[]): Promise<UploadResponse> => {
   const formData = new FormData();
-  
-  files.forEach((file) => {
+
+  files.forEach(file => {
     formData.append('images', file);
   });
-  
+
   const response = await api.post('/upload/multiple', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   });
-  
+
   return response.data;
 };
 
@@ -56,7 +56,7 @@ export const deleteFile = async (filename: string): Promise<{ message: string }>
 const uploadService = {
   uploadSingleImage,
   uploadMultipleImages,
-  deleteFile
+  deleteFile,
 };
 
-export default uploadService; 
+export default uploadService;

@@ -81,7 +81,7 @@ const messageService = {
   replyToMessage,
   updateMessageStatus,
   toggleReadStatus,
-  deleteMessage
+  deleteMessage,
 };
 
-export default messageService; 
+export default messageService;

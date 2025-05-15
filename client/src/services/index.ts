@@ -17,7 +17,7 @@ export {
   productService,
   settingsService,
   themeService,
-  uploadService
+  uploadService,
 };
 
 // Create exportable services object
@@ -30,7 +30,7 @@ const services = {
   productService,
   settingsService,
   themeService,
-  uploadService
+  uploadService,
 };
 
-export default services; 
+export default services;

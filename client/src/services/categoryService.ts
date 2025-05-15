@@ -61,7 +61,7 @@ const categoryService = {
   createCategory,
   updateCategory,
   deleteCategory,
-  toggleFeatured
+  toggleFeatured,
 };
 
-export default categoryService; 
+export default categoryService;

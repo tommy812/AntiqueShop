@@ -1,6 +1,6 @@
 import React from 'react';
-import { 
-  TextField, 
+import {
+  TextField,
   TextFieldProps,
   FormControl,
   FormHelperText,
@@ -12,7 +12,7 @@ import {
   Box,
   Tooltip,
   Alert,
-  IconButton
+  IconButton,
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { useTranslation } from 'react-i18next';
@@ -46,14 +46,14 @@ const FormField: React.FC<FormFieldProps> = ({
   ...rest
 }) => {
   const { t } = useTranslation();
-  
+
   // Determine if field has an error
   const hasError = Boolean(touched?.[name] && errors?.[name]);
-  
+
   // Additional info tooltip
   const renderInfoTooltip = () => {
     if (!infoText) return null;
-    
+
     return (
       <Tooltip title={infoText} arrow placement="top">
         <IconButton size="small" sx={{ ml: 0.5, p: 0 }}>
@@ -62,15 +62,15 @@ const FormField: React.FC<FormFieldProps> = ({
       </Tooltip>
     );
   };
-  
+
   // Error message with proper formatting
   const renderErrorMessage = () => {
     if (!hasError) return helperText;
-    
+
     if (errors?.[name]?.includes(',')) {
       // Multiple errors, split and display as a list
       const errorsList = errors[name].split(',').map(err => err.trim());
-      
+
       return (
         <Alert severity="error" sx={{ py: 0, mt: 0.5 }}>
           {errorsList.map((err, index) => (
@@ -81,34 +81,36 @@ const FormField: React.FC<FormFieldProps> = ({
         </Alert>
       );
     }
-    
+
     return errors?.[name];
   };
-  
+
   // For select fields
   if (options && options.length > 0) {
     return (
-      <FormControl 
-        fullWidth 
+      <FormControl
+        fullWidth
         error={hasError}
         margin="normal"
         required={required}
-        sx={{ 
+        sx={{
           minWidth: '150px',
           width: '100%',
           '& .MuiFormHelperText-root': {
             position: 'absolute',
-            bottom: '-20px'
-          }
+            bottom: '-20px',
+          },
         }}
       >
-        <InputLabel id={`${name}-label`}>{label} {renderInfoTooltip()}</InputLabel>
+        <InputLabel id={`${name}-label`}>
+          {label} {renderInfoTooltip()}
+        </InputLabel>
         <Select
           labelId={`${name}-label`}
           id={name}
           name={name}
           label={label}
-          {...rest as SelectProps}
+          {...(rest as SelectProps)}
           aria-describedby={hasError ? `${name}-error` : undefined}
           sx={{ minWidth: '150px' }}
         >
@@ -129,19 +131,21 @@ const FormField: React.FC<FormFieldProps> = ({
       </FormControl>
     );
   }
-  
+
   // For textarea fields
   if (type === 'textarea') {
     return (
-      <Box sx={{ 
-        position: 'relative', 
-        marginTop: 2, 
-        marginBottom: 3, 
-        width: '100%',
-        minWidth: '150px',
-        flex: 1,
-        display: 'flex'
-      }}>
+      <Box
+        sx={{
+          position: 'relative',
+          marginTop: 2,
+          marginBottom: 3,
+          width: '100%',
+          minWidth: '150px',
+          flex: 1,
+          display: 'flex',
+        }}
+      >
         <TextField
           fullWidth
           id={name}
@@ -160,28 +164,46 @@ const FormField: React.FC<FormFieldProps> = ({
           aria-describedby={hasError ? `${name}-error` : undefined}
           FormHelperTextProps={{
             id: hasError ? `${name}-error` : undefined,
-            sx: { position: 'absolute', bottom: '-20px' }
+            sx: { position: 'absolute', bottom: '-20px' },
           }}
-          sx={{ 
-            minWidth: '150px', 
+          sx={{
+            minWidth: '150px',
             width: '100%',
-            flex: 1
+            flex: 1,
           }}
           {...rest}
         />
       </Box>
     );
   }
-  
+
   // For file upload fields
   if (type === 'file') {
     // Extract handlers that can work with standard HTML input
     const { onChange, onBlur } = rest;
-    
+
     return (
-      <Box sx={{ position: 'relative', my: 2, minWidth: '150px', marginBottom: hasError ? '30px' : '16px' }}>
-        <Typography variant="subtitle2" gutterBottom component="label" htmlFor={name} sx={{ display: 'flex', alignItems: 'center' }}>
-          {label}{required && <Box component="span" sx={{ color: 'error.main', ml: 0.5 }}>*</Box>}
+      <Box
+        sx={{
+          position: 'relative',
+          my: 2,
+          minWidth: '150px',
+          marginBottom: hasError ? '30px' : '16px',
+        }}
+      >
+        <Typography
+          variant="subtitle2"
+          gutterBottom
+          component="label"
+          htmlFor={name}
+          sx={{ display: 'flex', alignItems: 'center' }}
+        >
+          {label}
+          {required && (
+            <Box component="span" sx={{ color: 'error.main', ml: 0.5 }}>
+              *
+            </Box>
+          )}
           {renderInfoTooltip()}
         </Typography>
         <Box
@@ -190,17 +212,17 @@ const FormField: React.FC<FormFieldProps> = ({
             borderRadius: 1,
             padding: 1,
             backgroundColor: '#fff',
-            minWidth: '150px'
+            minWidth: '150px',
           }}
         >
           <input
             type="file"
             id={name}
             name={name}
-            style={{ 
+            style={{
               width: '100%',
               padding: '8px 0',
-              minWidth: '150px'
+              minWidth: '150px',
             }}
             onChange={onChange}
             onBlur={onBlur}
@@ -211,8 +233,8 @@ const FormField: React.FC<FormFieldProps> = ({
           />
         </Box>
         {(hasError || helperText || validationRules) && (
-          <FormHelperText 
-            error={hasError} 
+          <FormHelperText
+            error={hasError}
             id={hasError ? `${name}-error` : undefined}
             sx={{ position: 'absolute', bottom: '-20px' }}
           >
@@ -222,7 +244,7 @@ const FormField: React.FC<FormFieldProps> = ({
       </Box>
     );
   }
-  
+
   // Default text field
   return (
     <Box sx={{ position: 'relative', marginTop: 2, marginBottom: 3, minWidth: '150px' }}>
@@ -243,7 +265,7 @@ const FormField: React.FC<FormFieldProps> = ({
         aria-describedby={hasError ? `${name}-error` : undefined}
         FormHelperTextProps={{
           id: hasError ? `${name}-error` : undefined,
-          sx: { position: 'absolute', bottom: '-20px' }
+          sx: { position: 'absolute', bottom: '-20px' },
         }}
         sx={{ minWidth: '150px' }}
         {...rest}
@@ -252,4 +274,4 @@ const FormField: React.FC<FormFieldProps> = ({
   );
 };
 
-export default FormField; 
+export default FormField;

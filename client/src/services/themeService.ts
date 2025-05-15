@@ -92,4 +92,4 @@ const themeService = {
   updateThemeSettings,
 };
 
-export default themeService; 
+export default themeService;

@@ -36,26 +36,26 @@ export interface AuthResponse {
 // Login user
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   const response = await api.post('/users/login', credentials);
-  
+
   // Store token in localStorage
   if (response.data.token) {
     localStorage.setItem('token', response.data.token);
     localStorage.setItem('user', JSON.stringify(response.data.user));
   }
-  
+
   return response.data;
 };
 
 // Register new user
 export const register = async (userData: RegisterData): Promise<AuthResponse> => {
   const response = await api.post('/users/register', userData);
-  
+
   // Store token in localStorage if registration includes automatic login
   if (response.data.token) {
     localStorage.setItem('token', response.data.token);
     localStorage.setItem('user', JSON.stringify(response.data.user));
   }
-  
+
   return response.data;
 };
 
@@ -68,20 +68,23 @@ export const getProfile = async (): Promise<User> => {
 // Update user profile
 export const updateProfile = async (userData: Partial<User>): Promise<User> => {
   const response = await api.put('/users/profile', userData);
-  
+
   // Update stored user data
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
   const updatedUser = { ...currentUser, ...response.data };
   localStorage.setItem('user', JSON.stringify(updatedUser));
-  
+
   return response.data;
 };
 
 // Change password
-export const changePassword = async (currentPassword: string, newPassword: string): Promise<{ message: string }> => {
+export const changePassword = async (
+  currentPassword: string,
+  newPassword: string
+): Promise<{ message: string }> => {
   const response = await api.put('/users/change-password', {
     currentPassword,
-    newPassword
+    newPassword,
   });
   return response.data;
 };
@@ -121,7 +124,7 @@ const authService = {
   getProfile,
   updateProfile,
   changePassword,
-  isAdmin
+  isAdmin,
 };
 
-export default authService; 
+export default authService;
