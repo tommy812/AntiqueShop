@@ -85,7 +85,15 @@ const withDB = handler => {
           message: 'Could not connect to the database. Please try again later.',
         });
       }
-      return handler(req, res, next);
+
+      // If handler is an Express router, we need to call it differently
+      if (typeof handler === 'function' && handler.name === 'router') {
+        // Pass request to the router and let it handle the rest
+        return handler(req, res, next);
+      } else {
+        // Otherwise, treat it as a regular middleware/handler function
+        return handler(req, res, next);
+      }
     } catch (error) {
       console.error('Error in route handler:', error);
       return res.status(500).json({
@@ -125,15 +133,43 @@ try {
 }
 
 // Routes with DB connection check - only set up if routes were imported successfully
-if (categoryRoutes) app.use('/api/categories', withDB(categoryRoutes));
-if (productRoutes) app.use('/api/products', withDB(productRoutes));
-if (periodRoutes) app.use('/api/periods', withDB(periodRoutes));
-if (userRoutes) app.use('/api/users', withDB(userRoutes));
-if (themeRoutes) app.use('/api/theme', withDB(themeRoutes));
-if (messageRoutes) app.use('/api/messages', withDB(messageRoutes));
-if (uploadRoutes) app.use('/api/upload', withDB(uploadRoutes));
-if (settingsRoutes) app.use('/api/settings', withDB(settingsRoutes));
-if (estimateRoutes) app.use('/api/estimates', withDB(estimateRoutes));
+// Use a function to wrap each route call
+const setupRoute = (path, router) => {
+  if (router) {
+    app.use(path, async (req, res, next) => {
+      try {
+        // Ensure DB connection before handling the request
+        const connected = await connectDB();
+        if (!connected) {
+          return res.status(500).json({
+            error: 'Database connection failed',
+            message: 'Could not connect to the database. Please try again later.',
+          });
+        }
+
+        // Continue to the router
+        router(req, res, next);
+      } catch (error) {
+        console.error(`Error handling route ${path}:`, error);
+        return res.status(500).json({
+          error: 'Server error',
+          message: 'An unexpected error occurred',
+        });
+      }
+    });
+  }
+};
+
+// Set up all routes
+setupRoute('/api/categories', categoryRoutes);
+setupRoute('/api/products', productRoutes);
+setupRoute('/api/periods', periodRoutes);
+setupRoute('/api/users', userRoutes);
+setupRoute('/api/theme', themeRoutes);
+setupRoute('/api/messages', messageRoutes);
+setupRoute('/api/upload', uploadRoutes);
+setupRoute('/api/settings', settingsRoutes);
+setupRoute('/api/estimates', estimateRoutes);
 
 // API status check route
 app.get(
