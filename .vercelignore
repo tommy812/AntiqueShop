@@ -1,5 +1,8 @@
-# Ignore client directory since it's deployed separately
+# Completely ignore client directory and its contents
+client
 client/
+client/*
+client/**/*
 
 # Ignore development files
 .git/
@@ -12,4 +15,9 @@ node_modules/
 
 # Ignore development scripts
 dev.sh
-deploy-vercel.sh 
+deploy-vercel.sh
+vercel-build.js
+
+# Ignore any ESLint and TypeScript config files in the root
+.eslintrc*
+tsconfig* 
