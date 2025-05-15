@@ -96,25 +96,44 @@ const withDB = handler => {
   };
 };
 
-// Import routes - do this after DB connection setup
-const categoryRoutes = require('./routes/category.routes');
-const productRoutes = require('./routes/product.routes');
-const periodRoutes = require('./routes/period.routes');
-const userRoutes = require('./routes/user.routes');
-const themeRoutes = require('./routes/theme.routes');
-const messageRoutes = require('./routes/message.routes');
-const uploadRoutes = require('./routes/upload.routes');
-const settingsRoutes = require('./routes/settings.routes');
+// Try to safely import routes
+let categoryRoutes,
+  productRoutes,
+  periodRoutes,
+  userRoutes,
+  themeRoutes,
+  messageRoutes,
+  uploadRoutes,
+  settingsRoutes,
+  estimateRoutes;
 
-// Routes with DB connection check
-app.use('/api/categories', withDB(categoryRoutes));
-app.use('/api/products', withDB(productRoutes));
-app.use('/api/periods', withDB(periodRoutes));
-app.use('/api/users', withDB(userRoutes));
-app.use('/api/theme', withDB(themeRoutes));
-app.use('/api/messages', withDB(messageRoutes));
-app.use('/api/upload', withDB(uploadRoutes));
-app.use('/api/settings', withDB(settingsRoutes));
+try {
+  // Import routes - do this after DB connection setup
+  categoryRoutes = require('./routes/category.routes.js');
+  productRoutes = require('./routes/product.routes.js');
+  periodRoutes = require('./routes/period.routes.js');
+  userRoutes = require('./routes/user.routes.js');
+  themeRoutes = require('./routes/theme.routes.js');
+  messageRoutes = require('./routes/message.routes.js');
+  uploadRoutes = require('./routes/upload.routes.js');
+  settingsRoutes = require('./routes/settings.routes.js');
+  estimateRoutes = require('./routes/estimate.routes.js');
+
+  console.log('Routes imported successfully');
+} catch (error) {
+  console.error('Error importing routes:', error);
+}
+
+// Routes with DB connection check - only set up if routes were imported successfully
+if (categoryRoutes) app.use('/api/categories', withDB(categoryRoutes));
+if (productRoutes) app.use('/api/products', withDB(productRoutes));
+if (periodRoutes) app.use('/api/periods', withDB(periodRoutes));
+if (userRoutes) app.use('/api/users', withDB(userRoutes));
+if (themeRoutes) app.use('/api/theme', withDB(themeRoutes));
+if (messageRoutes) app.use('/api/messages', withDB(messageRoutes));
+if (uploadRoutes) app.use('/api/upload', withDB(uploadRoutes));
+if (settingsRoutes) app.use('/api/settings', withDB(settingsRoutes));
+if (estimateRoutes) app.use('/api/estimates', withDB(estimateRoutes));
 
 // API status check route
 app.get(

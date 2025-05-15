@@ -6,7 +6,7 @@ const API_BASE_URL =
   process.env.REACT_APP_API_URL ||
   (process.env.NODE_ENV === 'production'
     ? 'https://antique-shop.vercel.app' // Updated backend URL without /api suffix
-    : 'http://localhost:5001/api'); // In development, use localhost
+    : 'http://localhost:5001'); // In development, use localhost
 
 // Configuration constants
 const TOKEN_REFRESH_THRESHOLD = 5 * 60 * 1000; // 5 minutes before expiry
@@ -22,9 +22,20 @@ const api = axios.create({
   timeout: REQUEST_TIMEOUT,
 });
 
-// Request interceptor for adding auth token and CSRF protection
+// Add request interceptor to prepend /api to URLs if needed
 api.interceptors.request.use(
   async config => {
+    // Add /api prefix to URLs that don't already have it and aren't absolute URLs
+    if (!config.url) return config;
+
+    if (
+      !config.url.startsWith('/api') &&
+      !config.url.startsWith('http://') &&
+      !config.url.startsWith('https://')
+    ) {
+      config.url = `/api${config.url}`;
+    }
+
     const token = localStorage.getItem('token');
 
     // Add authorization token if available
