@@ -22,10 +22,6 @@ try {
   const essentialFiles = [
     { path: path.join(srcDir, 'App.tsx'), fallback: path.join(srcDir, 'App.js') },
     { path: path.join(srcDir, 'index.tsx'), fallback: path.join(srcDir, 'index.js') },
-    {
-      path: path.join(srcDir, 'reportWebVitals.ts'),
-      fallback: path.join(srcDir, 'reportWebVitals.js'),
-    },
   ];
 
   for (const file of essentialFiles) {
@@ -33,31 +29,7 @@ try {
       console.log(`Using fallback ${file.fallback} for ${file.path}`);
     } else if (!fs.existsSync(file.path) && (!file.fallback || !fs.existsSync(file.fallback))) {
       console.error(`❌ Essential file missing: ${file.path}`);
-
-      // Create reportWebVitals.js if it's missing
-      if (file.path.includes('reportWebVitals')) {
-        console.log('Creating reportWebVitals.js fallback...');
-        const reportWebVitalsContent = `
-const reportWebVitals = (onPerfEntry) => {
-  if (onPerfEntry && onPerfEntry instanceof Function) {
-    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-      getCLS(onPerfEntry);
-      getFID(onPerfEntry);
-      getFCP(onPerfEntry);
-      getLCP(onPerfEntry);
-      getTTFB(onPerfEntry);
-    }).catch(error => {
-      console.warn('Web Vitals could not be loaded:', error);
-    });
-  }
-};
-
-export default reportWebVitals;`;
-        fs.writeFileSync(path.join(srcDir, 'reportWebVitals.js'), reportWebVitalsContent);
-        console.log('✅ Created reportWebVitals.js fallback');
-      } else {
-        console.log('Please check your source files before building.');
-      }
+      console.log('Please check your source files before building.');
     }
   }
 
