@@ -7,16 +7,6 @@ const dotenv = require('dotenv');
 // Load environment variables
 dotenv.config();
 
-// Import routes
-const categoryRoutes = require('./routes/category.routes');
-const productRoutes = require('./routes/product.routes');
-const periodRoutes = require('./routes/period.routes');
-const userRoutes = require('./routes/user.routes');
-const themeRoutes = require('./routes/theme.routes');
-const messageRoutes = require('./routes/message.routes');
-const uploadRoutes = require('./routes/upload.routes');
-const settingsRoutes = require('./routes/settings.routes');
-
 // Create Express app
 const app = express();
 
@@ -35,36 +25,35 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB connection
 const connectDB = async () => {
-  const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/pischetola_db';
-  console.log('Attempting to connect to MongoDB at:', MONGODB_URI);
-
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB successfully');
+    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/pischetola_db';
+    console.log('Attempting to connect to MongoDB at:', MONGODB_URI);
+
+    // Set mongoose options for better stability in serverless environment
+    const options = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    };
+
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(MONGODB_URI, options);
+      console.log('Connected to MongoDB successfully');
+    }
+    return true;
   } catch (err) {
     console.error('MongoDB connection error:', err);
     console.error(
       'Please ensure MongoDB is installed and running locally or provide a valid MongoDB Atlas connection string in the .env file.'
     );
-    console.error(
-      'The application will continue to run, but database functionality will not work.'
-    );
+    return false;
   }
 };
 
-// Routes
-app.use('/api/categories', categoryRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/periods', periodRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/theme', themeRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/settings', settingsRoutes);
-
-// API status check route
-app.get('/api', (req, res) => {
-  res.json({ status: 'API is running', timestamp: new Date().toISOString() });
+// Simple health check route that doesn't require DB
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 // Root route
@@ -85,9 +74,59 @@ app.get('/', (req, res) => {
   });
 });
 
+// Wrap route handlers with DB connection check
+const withDB = handler => {
+  return async (req, res, next) => {
+    try {
+      const connected = await connectDB();
+      if (!connected) {
+        return res.status(500).json({
+          error: 'Database connection failed',
+          message: 'Could not connect to the database. Please try again later.',
+        });
+      }
+      return handler(req, res, next);
+    } catch (error) {
+      console.error('Error in route handler:', error);
+      return res.status(500).json({
+        error: 'Server error',
+        message: 'An unexpected error occurred',
+      });
+    }
+  };
+};
+
+// Import routes - do this after DB connection setup
+const categoryRoutes = require('./routes/category.routes');
+const productRoutes = require('./routes/product.routes');
+const periodRoutes = require('./routes/period.routes');
+const userRoutes = require('./routes/user.routes');
+const themeRoutes = require('./routes/theme.routes');
+const messageRoutes = require('./routes/message.routes');
+const uploadRoutes = require('./routes/upload.routes');
+const settingsRoutes = require('./routes/settings.routes');
+
+// Routes with DB connection check
+app.use('/api/categories', withDB(categoryRoutes));
+app.use('/api/products', withDB(productRoutes));
+app.use('/api/periods', withDB(periodRoutes));
+app.use('/api/users', withDB(userRoutes));
+app.use('/api/theme', withDB(themeRoutes));
+app.use('/api/messages', withDB(messageRoutes));
+app.use('/api/upload', withDB(uploadRoutes));
+app.use('/api/settings', withDB(settingsRoutes));
+
+// API status check route
+app.get(
+  '/api',
+  withDB((req, res) => {
+    res.json({ status: 'API is running', timestamp: new Date().toISOString() });
+  })
+);
+
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Global error handler:', err.stack);
   res.status(500).json({
     message: err.message || 'An unexpected error occurred on the server',
     error: process.env.NODE_ENV === 'production' ? {} : err,
@@ -107,11 +146,6 @@ if (process.env.VERCEL_ENV !== 'production') {
 
 // For Vercel serverless function
 const handler = async (req, res) => {
-  // Connect to MongoDB if in serverless mode
-  if (!mongoose.connection.readyState) {
-    await connectDB();
-  }
-
   // Let express handle the request
   return app(req, res);
 };

@@ -5,7 +5,7 @@ import { ErrorType, parseApiError } from '../utils/errorHandler';
 const API_BASE_URL =
   process.env.REACT_APP_API_URL ||
   (process.env.NODE_ENV === 'production'
-    ? 'https://antique-shop.vercel.app/api' // Updated backend URL
+    ? 'https://antique-shop.vercel.app' // Updated backend URL without /api suffix
     : 'http://localhost:5001/api'); // In development, use localhost
 
 // Configuration constants
