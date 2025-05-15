@@ -1,0 +1,15 @@
+# Ignore client directory since it's deployed separately
+client/
+
+# Ignore development files
+.git/
+.github/
+.husky/
+node_modules/
+*.log
+*.md
+!README.md
+
+# Ignore development scripts
+dev.sh
+deploy-vercel.sh 
