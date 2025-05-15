@@ -10,10 +10,28 @@ dotenv.config();
 // Create Express app
 const app = express();
 
+// Allowed origins for CORS
+const allowedOrigins = [
+  'https://pischetola.vercel.app',
+  'https://pischetola-476lf1nls-thomas-projects-59f57ed7.vercel.app',
+  process.env.CLIENT_URL,
+  'http://localhost:3000',
+].filter(Boolean);
+
 // Middleware
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || '*',
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+
+      // Check if the origin is allowed
+      if (allowedOrigins.indexOf(origin) === -1) {
+        console.log('Origin allowed:', origin);
+        return callback(null, true); // Allow all origins for now
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
