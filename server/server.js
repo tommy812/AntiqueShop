@@ -23,10 +23,7 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? [process.env.CLIENT_URL || 'https://pischetola.vercel.app', /\.vercel\.app$/]
-        : 'http://localhost:3000',
+    origin: process.env.CLIENT_URL || '*',
     credentials: true,
   })
 );
@@ -70,22 +67,23 @@ app.get('/api', (req, res) => {
   res.json({ status: 'API is running', timestamp: new Date().toISOString() });
 });
 
-// Serve static assets in production
-if (process.env.NODE_ENV === 'production') {
-  // Set static folder
-  const clientBuildPath = path.resolve(__dirname, '../client/build');
-  app.use(express.static(clientBuildPath));
-
-  // All routes not handled by API should return the React app
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(clientBuildPath, 'index.html'));
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to Pischetola Antiques API',
+    status: 'online',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      categories: '/api/categories',
+      products: '/api/products',
+      periods: '/api/periods',
+      users: '/api/users',
+      theme: '/api/theme',
+      messages: '/api/messages',
+      settings: '/api/settings',
+    },
   });
-} else {
-  // Root route for development
-  app.get('/', (req, res) => {
-    res.json({ message: 'Welcome to Pischetola Antiques API' });
-  });
-}
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -97,7 +95,7 @@ app.use((err, req, res, next) => {
 });
 
 // Connect to MongoDB if not in serverless environment
-if (process.env.NODE_ENV !== 'vercel-serverless') {
+if (process.env.VERCEL_ENV !== 'production') {
   connectDB();
 
   // Start server
@@ -110,7 +108,7 @@ if (process.env.NODE_ENV !== 'vercel-serverless') {
 // For Vercel serverless function
 const handler = async (req, res) => {
   // Connect to MongoDB if in serverless mode
-  if (process.env.NODE_ENV === 'vercel-serverless' && !mongoose.connection.readyState) {
+  if (!mongoose.connection.readyState) {
     await connectDB();
   }
 
@@ -118,5 +116,5 @@ const handler = async (req, res) => {
   return app(req, res);
 };
 
-// Export the Express API for traditional Node.js environments
-module.exports = process.env.NODE_ENV === 'vercel-serverless' ? handler : app;
+// Export the Express API for Vercel
+module.exports = handler;
