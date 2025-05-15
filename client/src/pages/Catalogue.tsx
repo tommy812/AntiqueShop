@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   Container,
   Typography,
   Box,
@@ -25,7 +25,7 @@ import {
   IconButton,
   Drawer,
   CircularProgress,
-  Alert
+  Alert,
 } from '@mui/material';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
@@ -47,7 +47,7 @@ const PRICE_RANGES = [
   { label: 'Under €1,000', min: undefined, max: 1000 },
   { label: '€1,000 - €2,000', min: 1000, max: 2000 },
   { label: '€2,000 - €5,000', min: 2000, max: 5000 },
-  { label: 'Over €5,000', min: 5000, max: undefined }
+  { label: 'Over €5,000', min: 5000, max: undefined },
 ];
 
 const Catalogue = () => {
@@ -62,7 +62,7 @@ const Catalogue = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
-  
+
   // Data states
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -71,21 +71,21 @@ const Catalogue = () => {
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
-    itemsPerPage: 12
+    itemsPerPage: 12,
   });
-  
+
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
-  
+
   // Fetch categories and periods on component mount
   useEffect(() => {
     const fetchFilters = async () => {
       try {
         const [categoriesData, periodsData] = await Promise.all([
           getAllCategories(),
-          getAllPeriods()
+          getAllPeriods(),
         ]);
-        
+
         setCategories(categoriesData);
         setPeriods(periodsData);
       } catch (err) {
@@ -93,43 +93,44 @@ const Catalogue = () => {
         setError('Failed to load filter options. Please refresh the page.');
       }
     };
-    
+
     fetchFilters();
   }, []);
-  
+
   // Check for URL parameters before fetching products
   // Ensure this runs before the product fetch effect
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    
+
     // Handle category filter from URL
     const categoryParam = params.get('category');
     if (categoryParam) {
       setSelectedCategory(categoryParam);
     }
-    
+
     // Handle period filter from URL
     const periodParam = params.get('period');
     if (periodParam) {
       setSelectedPeriod(periodParam);
     }
-    
+
     // Handle search term from URL
     const searchParam = params.get('search');
     if (searchParam) {
       setSearchTerm(searchParam);
     }
-    
+
     // Handle price range from URL
     const minPrice = params.get('minPrice');
     const maxPrice = params.get('maxPrice');
     if (minPrice || maxPrice) {
       // Find matching price range or default to custom
-      const matchedRange = PRICE_RANGES.find(range => 
-        (range.min === (minPrice ? Number(minPrice) : undefined) && 
-         range.max === (maxPrice ? Number(maxPrice) : undefined))
+      const matchedRange = PRICE_RANGES.find(
+        range =>
+          range.min === (minPrice ? Number(minPrice) : undefined) &&
+          range.max === (maxPrice ? Number(maxPrice) : undefined)
       );
-      
+
       if (matchedRange) {
         setSelectedPriceRange(matchedRange.label);
       }
@@ -143,51 +144,51 @@ const Catalogue = () => {
         setPagination(prev => ({ ...prev, currentPage: pageNumber }));
       }
     }
-    
+
     // Scroll to top on any filter change from URL
     window.scrollTo(0, 0);
   }, [location.search]);
-  
+
   // Fetch products when filters change
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         // Build filters object
         const filters: ProductFilters = {
           page: pagination.currentPage,
           limit: 12,
-          sort: '-createdAt'
+          sort: '-createdAt',
         };
-        
+
         // Add search term if present
         if (searchTerm) {
           filters.search = searchTerm;
         }
-        
+
         // Add category filter if selected
         if (selectedCategory) {
           filters.category = selectedCategory;
         }
-        
+
         // Add period filter if selected
         if (selectedPeriod) {
           filters.period = selectedPeriod;
         }
-        
+
         // Add price range filter if selected
         const priceRange = PRICE_RANGES.find(range => range.label === selectedPriceRange);
         if (priceRange) {
           filters.minPrice = priceRange.min;
           filters.maxPrice = priceRange.max;
         }
-        
+
         const response = await getProducts(filters);
         setProducts(response.products);
         setPagination(response.pagination);
-        
+
         // Scroll to top when new products are loaded
         window.scrollTo(0, 0);
       } catch (err) {
@@ -198,19 +199,19 @@ const Catalogue = () => {
         setLoading(false);
       }
     };
-    
+
     fetchProducts();
   }, [searchTerm, selectedCategory, selectedPeriod, selectedPriceRange, pagination.currentPage]);
-  
+
   // Handle page change
   const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
     setPagination(prev => ({ ...prev, currentPage: page }));
-    
+
     // Update URL to include page parameter
     const params = new URLSearchParams(location.search);
     params.set('page', page.toString());
     navigate(`/catalogue?${params.toString()}`, { replace: true });
-    
+
     window.scrollTo(0, 0);
   };
 
@@ -218,10 +219,10 @@ const Catalogue = () => {
   const handleImageError = (productId: string) => {
     setImageErrors(prev => ({
       ...prev,
-      [productId]: true
+      [productId]: true,
     }));
   };
-  
+
   // Handle category filter change
   const handleCategoryChange = (categoryId: string) => {
     // If clicking the already selected category, do nothing (keep it selected)
@@ -233,7 +234,7 @@ const Catalogue = () => {
       window.scrollTo(0, 0);
     }
   };
-  
+
   // Handle period filter change
   const handlePeriodChange = (periodId: string) => {
     // If clicking the already selected period, do nothing (keep it selected)
@@ -245,8 +246,8 @@ const Catalogue = () => {
       window.scrollTo(0, 0);
     }
   };
-  
-  // Handle price range filter change  
+
+  // Handle price range filter change
   const handlePriceRangeChange = (priceRange: string) => {
     // If clicking the already selected price range, do nothing (keep it selected)
     // Otherwise change to the new price range
@@ -257,7 +258,7 @@ const Catalogue = () => {
       window.scrollTo(0, 0);
     }
   };
-  
+
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -266,23 +267,23 @@ const Catalogue = () => {
     // Scroll to top when search changes
     window.scrollTo(0, 0);
   };
-  
+
   // Function to update URL with current filter state
   const updateUrlWithFilters = () => {
     const params = new URLSearchParams();
-    
+
     if (selectedCategory) {
       params.append('category', selectedCategory);
     }
-    
+
     if (selectedPeriod) {
       params.append('period', selectedPeriod);
     }
-    
+
     if (searchTerm) {
       params.append('search', searchTerm);
     }
-    
+
     // Add price range
     const priceRange = PRICE_RANGES.find(range => range.label === selectedPriceRange);
     if (priceRange && priceRange.min) {
@@ -291,21 +292,21 @@ const Catalogue = () => {
     if (priceRange && priceRange.max) {
       params.append('maxPrice', priceRange.max.toString());
     }
-    
+
     // Add current page if not on first page
     if (pagination.currentPage > 1) {
       params.append('page', pagination.currentPage.toString());
     }
-    
+
     // Update URL without reloading page
     navigate(`/catalogue?${params.toString()}`, { replace: true });
   };
-  
+
   // Update URL when filters change
   useEffect(() => {
     // Skip the URL update on initial mount to avoid double URL change
     if (loading) return;
-    
+
     updateUrlWithFilters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, selectedPeriod, selectedPriceRange, searchTerm]);
@@ -317,14 +318,14 @@ const Catalogue = () => {
       </Typography>
 
       <Accordion defaultExpanded sx={{ mb: 2, boxShadow: 'none', '&:before': { display: 'none' } }}>
-        <AccordionSummary 
+        <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          sx={{ 
+          sx={{
             px: 0,
             minHeight: 48,
-            '& .MuiAccordionSummary-content': { 
-              my: 0 
-            }
+            '& .MuiAccordionSummary-content': {
+              my: 0,
+            },
           }}
         >
           <Typography variant="subtitle1" fontWeight="bold">
@@ -336,35 +337,27 @@ const Catalogue = () => {
             <FormControlLabel
               key="all-categories"
               control={
-                <Checkbox 
+                <Checkbox
                   checked={selectedCategory === ''}
                   onClick={() => handleCategoryChange('')}
                   size="small"
                   color="primary"
                 />
               }
-              label={
-                <Typography variant="body2">
-                  All Categories
-                </Typography>
-              }
+              label={<Typography variant="body2">All Categories</Typography>}
             />
-            {categories.map((category) => (
+            {categories.map(category => (
               <FormControlLabel
                 key={category._id}
                 control={
-                  <Checkbox 
+                  <Checkbox
                     checked={selectedCategory === category._id}
                     onClick={() => handleCategoryChange(category._id || '')}
                     size="small"
                     color="primary"
                   />
                 }
-                label={
-                  <Typography variant="body2">
-                    {category.name}
-                  </Typography>
-                }
+                label={<Typography variant="body2">{category.name}</Typography>}
               />
             ))}
           </FormGroup>
@@ -372,14 +365,14 @@ const Catalogue = () => {
       </Accordion>
 
       <Accordion defaultExpanded sx={{ mb: 2, boxShadow: 'none', '&:before': { display: 'none' } }}>
-        <AccordionSummary 
+        <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          sx={{ 
+          sx={{
             px: 0,
             minHeight: 48,
-            '& .MuiAccordionSummary-content': { 
-              my: 0 
-            }
+            '& .MuiAccordionSummary-content': {
+              my: 0,
+            },
           }}
         >
           <Typography variant="subtitle1" fontWeight="bold">
@@ -391,35 +384,27 @@ const Catalogue = () => {
             <FormControlLabel
               key="all-periods"
               control={
-                <Checkbox 
+                <Checkbox
                   checked={selectedPeriod === ''}
                   onClick={() => handlePeriodChange('')}
                   size="small"
                   color="primary"
                 />
               }
-              label={
-                <Typography variant="body2">
-                  All Periods
-                </Typography>
-              }
+              label={<Typography variant="body2">All Periods</Typography>}
             />
-            {periods.map((period) => (
+            {periods.map(period => (
               <FormControlLabel
                 key={period._id}
                 control={
-                  <Checkbox 
+                  <Checkbox
                     checked={selectedPeriod === period._id}
                     onClick={() => handlePeriodChange(period._id || '')}
                     size="small"
                     color="primary"
                   />
                 }
-                label={
-                  <Typography variant="body2">
-                    {period.name}
-                  </Typography>
-                }
+                label={<Typography variant="body2">{period.name}</Typography>}
               />
             ))}
           </FormGroup>
@@ -427,14 +412,14 @@ const Catalogue = () => {
       </Accordion>
 
       <Accordion defaultExpanded sx={{ mb: 2, boxShadow: 'none', '&:before': { display: 'none' } }}>
-        <AccordionSummary 
+        <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          sx={{ 
+          sx={{
             px: 0,
             minHeight: 48,
-            '& .MuiAccordionSummary-content': { 
-              my: 0 
-            }
+            '& .MuiAccordionSummary-content': {
+              my: 0,
+            },
           }}
         >
           <Typography variant="subtitle1" fontWeight="bold">
@@ -443,22 +428,18 @@ const Catalogue = () => {
         </AccordionSummary>
         <AccordionDetails sx={{ p: 0 }}>
           <FormGroup>
-            {PRICE_RANGES.map((range) => (
+            {PRICE_RANGES.map(range => (
               <FormControlLabel
                 key={range.label}
                 control={
-                  <Checkbox 
+                  <Checkbox
                     checked={selectedPriceRange === range.label}
                     onClick={() => handlePriceRangeChange(range.label)}
                     size="small"
                     color="primary"
                   />
                 }
-                label={
-                  <Typography variant="body2">
-                    {range.label}
-                  </Typography>
-                }
+                label={<Typography variant="body2">{range.label}</Typography>}
               />
             ))}
           </FormGroup>
@@ -474,39 +455,28 @@ const Catalogue = () => {
           Catalogue
         </Typography>
         <Typography variant="subtitle1" color="text.secondary" paragraph>
-          Explore our collection of fine antiques and collectibles. Each piece has been carefully selected for its quality, authenticity, and historical significance.
+          Explore our collection of fine antiques and collectibles. Each piece has been carefully
+          selected for its quality, authenticity, and historical significance.
         </Typography>
       </Box>
-      
+
       <Box sx={{ display: 'flex' }}>
-        {/* Mobile filter toggle */}
-        {isMobile && (
-          <Box sx={{ width: '100%', mb: 2 }}>
-            <Button 
-              fullWidth 
-              startIcon={<FilterListIcon />}
-              onClick={() => setMobileFiltersOpen(true)}
-              variant="outlined"
-            >
-              Show Filters
-            </Button>
-          </Box>
-        )}
-        
         {/* Mobile filter drawer */}
         <Drawer
           anchor="left"
           open={mobileFiltersOpen}
           onClose={() => setMobileFiltersOpen(false)}
-          sx={{ 
-            '& .MuiDrawer-paper': { 
-              width: '80%', 
+          sx={{
+            '& .MuiDrawer-paper': {
+              width: '80%',
               maxWidth: 350,
-              p: 3
-            }
+              p: 3,
+            },
           }}
         >
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
+          >
             <Typography variant="h6">Filters</Typography>
             <IconButton onClick={() => setMobileFiltersOpen(false)}>
               <CloseIcon />
@@ -515,67 +485,104 @@ const Catalogue = () => {
           <Divider sx={{ mb: 3 }} />
           <FilterSection />
         </Drawer>
-        
+
         {/* Sidebar filters (desktop) */}
         {!isMobile && (
           <Box sx={{ width: 280, flexShrink: 0, mr: 4 }}>
-            <Paper 
-              elevation={0} 
-              sx={{ 
-                p: 3, 
+            <Paper
+              elevation={0}
+              sx={{
+                p: 3,
                 border: `1px solid ${theme.palette.divider}`,
                 position: 'sticky',
                 top: 24,
                 maxHeight: 'calc(100vh - 48px)',
-                overflowY: 'auto'
+                overflowY: 'auto',
               }}
             >
               <FilterSection />
             </Paper>
           </Box>
         )}
-        
+
         {/* Main content */}
         <Box sx={{ flexGrow: 1 }}>
-          {/* Search bar */}
+          {/* Search bar and filter button for mobile */}
           <Box sx={{ mb: 4 }}>
-            <TextField
-              fullWidth
-              placeholder="Search by name, description, or keywords..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-              variant="outlined"
-            />
+            {isMobile ? (
+              <>
+                {/* Filter button above search on mobile */}
+                <Box sx={{ mb: 2 }}>
+                  <Button
+                    fullWidth
+                    startIcon={<FilterListIcon />}
+                    onClick={() => setMobileFiltersOpen(true)}
+                    variant="outlined"
+                    size="medium"
+                  >
+                    Show Filters
+                  </Button>
+                </Box>
+                {/* Search bar below filter button */}
+                <TextField
+                  fullWidth
+                  placeholder="Search by name, description, or keywords..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                  variant="outlined"
+                />
+              </>
+            ) : (
+              /* Search bar only for desktop */
+              <TextField
+                fullWidth
+                placeholder="Search by name, description, or keywords..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+                variant="outlined"
+              />
+            )}
           </Box>
-          
+
           {/* Results count and sorting */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}
+          >
             <Typography variant="body2" color="text.secondary">
-              {loading ? 'Loading products...' : `Showing ${products.length} of ${pagination.totalItems} items`}
+              {loading
+                ? 'Loading products...'
+                : `Showing ${products.length} of ${pagination.totalItems} items`}
             </Typography>
           </Box>
-          
+
           {/* Error message */}
           {error && (
             <Alert severity="error" sx={{ mb: 3 }}>
               {error}
             </Alert>
           )}
-          
+
           {/* Loading indicator */}
           {loading && (
             <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
               <CircularProgress />
             </Box>
           )}
-          
+
           {/* No results message */}
           {!loading && products.length === 0 && !error && (
             <Box sx={{ textAlign: 'center', py: 6 }}>
@@ -587,13 +594,13 @@ const Catalogue = () => {
               </Typography>
             </Box>
           )}
-          
+
           {/* Products grid */}
           <Grid container spacing={3}>
-            {products.map((product) => (
+            {products.map(product => (
               <Grid item xs={12} sm={6} md={6} lg={4} key={product._id}>
-                <Card 
-                  sx={{ 
+                <Card
+                  sx={{
                     display: 'flex',
                     flexDirection: 'column',
                     height: '100%',
@@ -606,29 +613,29 @@ const Catalogue = () => {
                     borderRadius: 1,
                   }}
                 >
-                  <Box 
-                    sx={{ 
+                  <Box
+                    sx={{
                       position: 'relative',
                       paddingTop: '75%', // 4:3 aspect ratio (more standard for product images)
                       width: '100%',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
                     }}
                   >
                     <CardMedia
                       component="img"
-                      sx={{ 
+                      sx={{
                         position: 'absolute',
                         top: 0,
                         left: 0,
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
-                        objectPosition: 'center'
+                        objectPosition: 'center',
                       }}
                       image={
-                        imageErrors[product._id || ''] 
+                        imageErrors[product._id || '']
                           ? DEFAULT_FALLBACK_IMAGE
-                          : product.images && product.images.length > 0 
+                          : product.images && product.images.length > 0
                             ? getImageUrl(product.images[0])
                             : DEFAULT_FALLBACK_IMAGE
                       }
@@ -636,36 +643,40 @@ const Catalogue = () => {
                       alt={product.name}
                     />
                   </Box>
-                  <CardContent sx={{ 
-                    flexGrow: 1, 
-                    p: 2, 
-                    display: 'flex', 
-                    flexDirection: 'column',
-                    minHeight: '180px', // Changed from fixed height to minHeight for better responsiveness
-                  }}>
+                  <CardContent
+                    sx={{
+                      flexGrow: 1,
+                      p: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      minHeight: '180px', // Changed from fixed height to minHeight for better responsiveness
+                    }}
+                  >
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      {typeof product.category === 'object' ? product.category.name : 'Unknown Category'} • 
-                      {typeof product.period === 'object' ? product.period.name : 'Unknown Period'}
+                      {typeof product.category === 'object'
+                        ? product.category.name
+                        : 'Unknown Category'}{' '}
+                      •{typeof product.period === 'object' ? product.period.name : 'Unknown Period'}
                     </Typography>
-                    <Typography 
-                      variant="h6" 
-                      component="h2" 
-                      sx={{ 
-                        fontWeight: 'medium', 
+                    <Typography
+                      variant="h6"
+                      component="h2"
+                      sx={{
+                        fontWeight: 'medium',
                         mb: 1,
                         minHeight: '48px',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical'
+                        WebkitBoxOrient: 'vertical',
                       }}
                     >
                       {product.name}
                     </Typography>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary" 
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
                       sx={{
                         mb: 1,
                         minHeight: '40px',
@@ -673,22 +684,22 @@ const Catalogue = () => {
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis'
+                        textOverflow: 'ellipsis',
                       }}
                     >
                       {product.description}
                     </Typography>
-                    <Typography 
-                      variant="h6" 
-                      color="primary" 
+                    <Typography
+                      variant="h6"
+                      color="primary"
                       sx={{ fontWeight: 'bold', mt: 'auto' }}
                     >
                       €{product.price.toLocaleString()}
                     </Typography>
                   </CardContent>
                   <CardActions sx={{ p: 2, pt: 0, height: '60px' }}>
-                    <Button 
-                      variant="outlined" 
+                    <Button
+                      variant="outlined"
                       fullWidth
                       size="small"
                       component={RouterLink}
@@ -701,16 +712,16 @@ const Catalogue = () => {
               </Grid>
             ))}
           </Grid>
-          
+
           {/* Pagination */}
           {!loading && pagination.totalPages > 1 && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
-              <Pagination 
-                count={pagination.totalPages} 
-                page={pagination.currentPage} 
+              <Pagination
+                count={pagination.totalPages}
+                page={pagination.currentPage}
                 onChange={handlePageChange}
                 color="primary"
-                size={isSmall ? "small" : "medium"}
+                size={isSmall ? 'small' : 'medium'}
               />
             </Box>
           )}
@@ -720,4 +731,4 @@ const Catalogue = () => {
   );
 };
 
-export default Catalogue; 
+export default Catalogue;
