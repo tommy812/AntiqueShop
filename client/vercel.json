@@ -10,5 +10,5 @@
     "CI": "false",
     "REACT_APP_API_URL": "https://antique-shop.vercel.app"
   },
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "routes": [{ "handle": "filesystem" }, { "src": "/.*", "dest": "/index.html" }]
 }

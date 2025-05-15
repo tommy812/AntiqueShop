@@ -1,143 +1,127 @@
 # Vercel Deployment Guide for Pischetola Antiques
 
-This document outlines the deployment process for both the server and client components of the Pischetola Antiques website on Vercel.
+This guide provides step-by-step instructions for deploying the Pischetola Antiques application on Vercel.
 
 ## Project Structure
 
-The project consists of two main components:
+The project consists of two separate deployments:
 
-- **Server**: Node.js/Express API backend
-- **Client**: React/TypeScript frontend
+- **Server API**: Deployed at https://antique-shop.vercel.app
+- **Client**: Deployed at https://pischetola.vercel.app
 
-## Deployment Configuration
+## Deployment Steps
 
-### Server Deployment
+### 1. Server Deployment
 
-The server is deployed as a serverless Node.js function on Vercel with the following configuration:
+The server is already deployed at https://antique-shop.vercel.app. If you need to redeploy it:
 
-1. **vercel.json** (in server directory):
-
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [{ "src": "/(.*)", "dest": "/server.js" }],
-  "functions": {
-    "server.js": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  }
-}
-```
-
-2. **Root index.js**:
-   - Acts as the main entry point for the Vercel deployment
-   - Provides basic health check endpoints
-   - Attempts to load and use the server module
-   - Includes fallback error handling
-
-### Client Deployment
-
-The client is deployed as a static site with the following configuration:
-
-1. **vercel.json** (in client directory):
-
-```json
-{
-  "version": 2,
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": "build",
-  "framework": "create-react-app",
-  "env": {
-    "DISABLE_ESLINT_PLUGIN": "true",
-    "ESLINT_NO_DEV_ERRORS": "true",
-    "TSC_COMPILE_ON_ERROR": "true",
-    "CI": "false",
-    "REACT_APP_API_URL": "https://pischetola-antiques.vercel.app"
-  },
-  "routes": [
-    // Routes configuration for static assets and SPA routing
-  ]
-}
-```
-
-2. **build-client.js**:
-   - Ensures all necessary files exist before building
-   - Creates fallback files if needed
-   - Sets environment variables to bypass build errors
-
-## Deployment Process
-
-### Manual Deployment
-
-1. **Server Deployment**:
+1. Navigate to the server directory:
 
    ```bash
    cd server
-   vercel
    ```
 
-2. **Client Deployment**:
+2. Deploy with Vercel CLI:
+   ```bash
+   vercel --prod
+   ```
+
+### 2. Client Deployment
+
+To deploy the client application:
+
+1. Navigate to the client directory:
+
    ```bash
    cd client
-   vercel
    ```
 
-### Automated Deployment
+2. Deploy with Vercel CLI:
 
-The repository is configured for continuous deployment:
+   ```bash
+   vercel --prod
+   ```
 
-1. Push to the `main` branch triggers deployment
-2. Vercel automatically runs the build process defined in vercel.json
-3. The build process executes:
-   - For server: `npm run vercel-build`
-   - For client: `node build-client.js`
+3. If you're deploying through the Vercel dashboard, use these settings:
+   - **Framework Preset**: Create React App
+   - **Build Command**: `npm run vercel-build`
+   - **Output Directory**: `build`
+   - **Install Command**: `npm install --legacy-peer-deps`
 
 ## Environment Variables
 
-Ensure the following environment variables are set in your Vercel project:
+### Server Environment Variables
 
-1. **Server**:
+Set these in your Vercel server project settings:
 
-   - `MONGODB_URI`: MongoDB connection string
-   - `JWT_SECRET`: Secret for JWT token generation
-   - `NODE_ENV`: Set to "production"
+```
+NODE_ENV=production
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>
+JWT_SECRET=your_secret_key_here
+```
 
-2. **Client**:
-   - `REACT_APP_API_URL`: URL of the deployed server API
+### Client Environment Variables
+
+These are already configured in the client's vercel.json:
+
+```
+DISABLE_ESLINT_PLUGIN=true
+ESLINT_NO_DEV_ERRORS=true
+TSC_COMPILE_ON_ERROR=true
+CI=false
+REACT_APP_API_URL=https://antique-shop.vercel.app
+```
 
 ## Troubleshooting
 
-### Common Issues
+### Client-Side Routing Issues
 
-1. **Build Failures**:
+If you encounter 404 errors with client-side routing:
 
-   - Check build logs for specific errors
-   - Ensure all dependencies are properly installed
-   - Verify that all required files exist
+1. Verify the client's vercel.json has the correct routes configuration:
 
-2. **API Connection Issues**:
+   ```json
+   "routes": [
+     { "handle": "filesystem" },
+     { "src": "/.*", "dest": "/index.html" }
+   ]
+   ```
 
-   - Verify the `REACT_APP_API_URL` is correctly set
-   - Check CORS configuration in the server
+2. Make sure your React Router is properly configured in App.tsx.
 
-3. **Missing Dependencies**:
-   - Run `npm install` in both client and server directories
-   - Check for version conflicts in package.json
+### Build Failures
 
-### Debug Endpoints
+If the client build fails:
 
-- `/debug`: Returns environment information
-- `/health`: Simple health check endpoint
-- `/`: Root endpoint with basic API information
+1. Check the build logs for specific errors
+2. Try building locally first: `cd client && npm run build`
+3. Make sure all required files exist in the src directory
 
-## Production URLs
+### API Connection Issues
 
-- **Server API**: https://antique-shop.vercel.app
-- **Client**: https://pischetola.vercel.app
+If the client can't connect to the API:
+
+1. Verify the REACT_APP_API_URL is correctly set to https://antique-shop.vercel.app
+2. Check that CORS is properly configured on the server
+3. Test the API endpoint directly: https://antique-shop.vercel.app/health
+
+## Using the Automated Deployment Script
+
+For convenience, you can use the deploy-vercel.sh script from the root directory:
+
+```bash
+chmod +x deploy-vercel.sh
+./deploy-vercel.sh
+```
+
+This script will:
+
+1. Deploy the server
+2. Update the client configuration with the server URL
+3. Deploy the client
+
+## Important Notes
+
+1. **Monorepo Structure**: This project uses a monorepo structure but deploys the client and server separately.
+2. **API URL**: The client is configured to use https://antique-shop.vercel.app as the API URL.
+3. **SPA Routing**: The client uses React Router for client-side routing, which requires special configuration in vercel.json.
