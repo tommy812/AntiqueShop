@@ -4,18 +4,18 @@
   "description": "Pischetola Antiques Website",
   "main": "index.js",
   "scripts": {
-    "start": "node server/server.js",
+    "start": "node index.js",
     "server": "nodemon server/server.js",
     "client": "cd client && npm start",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "build": "npm install",
+    "build": "node install-deps.js",
     "install-all": "npm install && cd client && npm install && cd ../server && npm install",
     "seed": "cd server && npm run seed",
     "test": "cd client && npm test",
     "lint": "cd client && npm run lint",
     "prepare": "husky install",
     "vercel-build-helper": "node vercel-build.js",
-    "vercel-build": "cd server && npm install"
+    "vercel-build": "node install-deps.js"
   },
   "repository": {
     "type": "git",
