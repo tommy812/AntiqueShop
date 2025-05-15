@@ -40,6 +40,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Static files directory for uploaded images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Also make uploads available at the root path for easier access
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB connection
 const connectDB = async () => {
