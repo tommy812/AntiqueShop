@@ -1,43 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, 
-  Typography, 
-  Box, 
-  Paper, 
-  Grid, 
+import {
+  Container,
+  Typography,
+  Box,
+  Paper,
+  Grid,
   Button,
   Card,
   CardMedia,
   CardContent,
   CardActions,
   useTheme,
-  CircularProgress
+  CircularProgress,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Link as RouterLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+
+// Import services
 import { categoryService, productService } from '../services';
 import { Category } from '../services/categoryService';
 import { Product } from '../services/productService';
-import { useTranslation } from 'react-i18next';
 
-// Placeholder hero image (replace with actual image later)
-const heroImage = 'https://images.unsplash.com/photo-1574642344377-3ba2a7a5e822?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80';
+// Import components
+import { HeroSection } from '../components/styled/HeroSection';
 
-const HeroSection = styled(Box)(({ theme }) => ({
-  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url(${heroImage})`,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  height: '70vh',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  padding: theme.spacing(2),
-  color: '#fff',
-  textAlign: 'center',
-  marginBottom: theme.spacing(6),
-}));
+// Import image utilities
+import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from '../utils/imageUtils';
 
 const Home = () => {
   const { t } = useTranslation();
@@ -54,9 +44,9 @@ const Home = () => {
         setLoading(true);
         const [categoriesData, productsData] = await Promise.all([
           categoryService.getFeaturedCategories(),
-          productService.getFeaturedProducts()
+          productService.getFeaturedProducts(),
         ]);
-        
+
         setFeaturedCategories(categoriesData);
         setFeaturedProducts(productsData);
         setError(null);
@@ -65,24 +55,27 @@ const Home = () => {
         setError('Failed to load featured content. Please try again later.');
         // Use placeholder data if API fails
         setFeaturedCategories([
-          { 
-            _id: '1', 
-            name: 'Furniture', 
+          {
+            _id: '1',
+            name: 'Furniture',
             description: 'Exquisite antique furniture pieces from various periods',
-            image: 'https://images.unsplash.com/photo-1597696929736-6d13bed8e6a8?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
+            image:
+              'https://images.unsplash.com/photo-1597696929736-6d13bed8e6a8?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
           },
-          { 
-            _id: '2', 
-            name: 'Paintings', 
+          {
+            _id: '2',
+            name: 'Paintings',
             description: 'Beautiful paintings and artwork from renowned artists',
-            image: 'https://images.unsplash.com/photo-1581404917879-53e19259fdda?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
+            image:
+              'https://images.unsplash.com/photo-1581404917879-53e19259fdda?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
           },
-          { 
-            _id: '3', 
-            name: 'Decorative Arts', 
+          {
+            _id: '3',
+            name: 'Decorative Arts',
             description: 'Unique decorative pieces that add character to any space',
-            image: 'https://images.unsplash.com/photo-1592837634593-87f4e0673db6?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
-          }
+            image:
+              'https://images.unsplash.com/photo-1592837634593-87f4e0673db6?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+          },
         ]);
       } finally {
         setLoading(false);
@@ -96,71 +89,69 @@ const Home = () => {
   const handleImageError = (productId: string) => {
     setImageErrors(prev => ({
       ...prev,
-      [productId]: true
+      [productId]: true,
     }));
-  };
-
-  // Get image URL with error handling
-  const getImageUrl = (imagePath: string | undefined) => {
-    if (!imagePath) return 'https://via.placeholder.com/300x200?text=No+Image';
-    if (imageErrors[imagePath]) {
-      return 'https://via.placeholder.com/300x200?text=No+Image';
-    }
-    return `http://localhost:5001${imagePath}`;
   };
 
   return (
     <Box>
       <HeroSection>
-        <Typography variant="h1" gutterBottom sx={{ 
-          fontWeight: 700, 
-          fontSize: {xs: '2.5rem', md: '4rem'}, 
-          mb: 2,
-          textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
-        }}>
+        <Typography
+          variant="h1"
+          gutterBottom
+          sx={{
+            fontWeight: 700,
+            fontSize: { xs: '2.5rem', md: '4rem' },
+            mb: 2,
+            textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+          }}
+        >
           {t('homepage.hero.title')}
         </Typography>
-        <Typography variant="h4" sx={{ 
-          maxWidth: '800px', 
-          mb: 4,
-          fontWeight: 400,
-          textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
-        }}>
+        <Typography
+          variant="h4"
+          sx={{
+            maxWidth: '800px',
+            mb: 4,
+            fontWeight: 400,
+            textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+          }}
+        >
           {t('homepage.hero.subtitle')}
         </Typography>
         <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <Button 
-            variant="contained" 
-            color="secondary" 
+          <Button
+            variant="contained"
+            color="secondary"
             size="large"
             component={RouterLink}
             to="/catalogue"
             endIcon={<ArrowForwardIcon />}
-            sx={{ 
-              fontWeight: 600, 
+            sx={{
+              fontWeight: 600,
               fontSize: '1.1rem',
               px: 4,
-              py: 1.5
+              py: 1.5,
             }}
           >
             {t('homepage.hero.looking_to_buy')}
           </Button>
-          <Button 
-            variant="outlined" 
-            color="secondary" 
+          <Button
+            variant="outlined"
+            color="secondary"
             size="large"
             component={RouterLink}
             to="/estimate"
             endIcon={<ArrowForwardIcon />}
-            sx={{ 
-              fontWeight: 600, 
+            sx={{
+              fontWeight: 600,
               fontSize: '1.1rem',
               px: 4,
               py: 1.5,
               backgroundColor: 'rgba(255, 255, 255, 0.15)',
               '&:hover': {
                 backgroundColor: 'rgba(255, 255, 255, 0.25)',
-              }
+              },
             }}
           >
             {t('homepage.hero.looking_to_sell')}
@@ -171,27 +162,39 @@ const Home = () => {
       <Container maxWidth="lg">
         {/* Featured Products Section */}
         <Box sx={{ mb: { xs: 5, md: 8 } }}>
-          <Typography variant="h2" gutterBottom sx={{ mb: { xs: 3, md: 4 }, textAlign: 'center', fontSize: { xs: '1.75rem', md: '2.5rem' } }}>
+          <Typography
+            variant="h2"
+            gutterBottom
+            sx={{
+              mb: { xs: 3, md: 4 },
+              textAlign: 'center',
+              fontSize: { xs: '1.75rem', md: '2.5rem' },
+            }}
+          >
             {t('homepage.featured_products.title')}
           </Typography>
-          
+
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
               <CircularProgress />
             </Box>
           ) : error ? (
-            <Typography color="error" align="center">{error}</Typography>
+            <Typography color="error" align="center">
+              {error}
+            </Typography>
           ) : (
             <Grid container spacing={{ xs: 2, md: 3 }}>
-              {featuredProducts.map((product) => {
+              {featuredProducts.map(product => {
                 // Extract category and period names
-                const categoryName = typeof product.category === 'object' ? product.category.name : 'Unknown Category';
-                const periodName = typeof product.period === 'object' ? product.period.name : 'Unknown Period';
-                
+                const categoryName =
+                  typeof product.category === 'object' ? product.category.name : 'Unknown Category';
+                const periodName =
+                  typeof product.period === 'object' ? product.period.name : 'Unknown Period';
+
                 return (
                   <Grid item xs={12} sm={6} md={4} key={product._id}>
-                    <Card 
-                      sx={{ 
+                    <Card
+                      sx={{
                         display: 'flex',
                         flexDirection: 'column',
                         height: '100%',
@@ -204,47 +207,51 @@ const Home = () => {
                         borderRadius: 1,
                       }}
                     >
-                      <Box 
-                        sx={{ 
+                      <Box
+                        sx={{
                           position: 'relative',
                           paddingTop: '66.67%', // 2:3 aspect ratio
                           width: '100%',
-                          overflow: 'hidden'
+                          overflow: 'hidden',
                         }}
                       >
                         <CardMedia
                           component="img"
-                          sx={{ 
+                          sx={{
                             position: 'absolute',
                             top: 0,
                             left: 0,
                             width: '100%',
                             height: '100%',
                             objectFit: 'cover',
-                            objectPosition: 'center'
+                            objectPosition: 'center',
                           }}
-                          image={product.images && product.images.length > 0 
-                            ? getImageUrl(product.images[0])
-                            : 'https://via.placeholder.com/300x200?text=No+Image'}
+                          image={
+                            product.images && product.images.length > 0
+                              ? getImageUrl(product.images[0])
+                              : DEFAULT_FALLBACK_IMAGE
+                          }
                           alt={product.name}
                           onError={() => handleImageError(product._id || '')}
                         />
                       </Box>
-                      <CardContent sx={{ 
-                        flexGrow: 1, 
-                        p: { xs: 1.5, md: 2 }, 
-                        display: 'flex', 
-                        flexDirection: 'column',
-                        height: { xs: 'auto', md: '180px' } 
-                      }}>
+                      <CardContent
+                        sx={{
+                          flexGrow: 1,
+                          p: { xs: 1.5, md: 2 },
+                          display: 'flex',
+                          flexDirection: 'column',
+                          height: { xs: 'auto', md: '180px' },
+                        }}
+                      >
                         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                           {categoryName} • {periodName}
                         </Typography>
-                        <Typography 
-                          variant="h6" 
-                          component="h3" 
-                          sx={{ 
-                            fontWeight: 'medium', 
+                        <Typography
+                          variant="h6"
+                          component="h3"
+                          sx={{
+                            fontWeight: 'medium',
                             mb: 1,
                             height: { xs: 'auto', md: '48px' },
                             minHeight: { xs: '24px' },
@@ -252,13 +259,13 @@ const Home = () => {
                             textOverflow: 'ellipsis',
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical'
+                            WebkitBoxOrient: 'vertical',
                           }}
                         >
                           {product.name}
                         </Typography>
-                        <Typography 
-                          variant="body2" 
+                        <Typography
+                          variant="body2"
                           sx={{
                             mb: 1,
                             height: { xs: 'auto', md: '40px' },
@@ -267,22 +274,24 @@ const Home = () => {
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden',
-                            textOverflow: 'ellipsis'
+                            textOverflow: 'ellipsis',
                           }}
                         >
                           {product.description}
                         </Typography>
-                        <Typography 
-                          variant="h6" 
-                          color="primary" 
+                        <Typography
+                          variant="h6"
+                          color="primary"
                           sx={{ fontWeight: 'bold', mt: { xs: 1, md: 'auto' } }}
                         >
                           €{product.price.toLocaleString()}
                         </Typography>
                       </CardContent>
-                      <CardActions sx={{ p: { xs: 1.5, md: 2 }, pt: 0, height: { xs: 'auto', md: '60px' } }}>
-                        <Button 
-                          variant="outlined" 
+                      <CardActions
+                        sx={{ p: { xs: 1.5, md: 2 }, pt: 0, height: { xs: 'auto', md: '60px' } }}
+                      >
+                        <Button
+                          variant="outlined"
                           fullWidth
                           size="small"
                           component={RouterLink}
@@ -300,64 +309,81 @@ const Home = () => {
         </Box>
 
         <Box sx={{ mb: { xs: 5, md: 8 } }}>
-          <Typography variant="h2" gutterBottom sx={{ mb: { xs: 3, md: 4 }, textAlign: 'center', fontSize: { xs: '1.75rem', md: '2.5rem' } }}>
+          <Typography
+            variant="h2"
+            gutterBottom
+            sx={{
+              mb: { xs: 3, md: 4 },
+              textAlign: 'center',
+              fontSize: { xs: '1.75rem', md: '2.5rem' },
+            }}
+          >
             {t('homepage.categories.title')}
           </Typography>
-          
+
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
               <CircularProgress />
             </Box>
           ) : error ? (
-            <Typography color="error" align="center">{error}</Typography>
+            <Typography color="error" align="center">
+              {error}
+            </Typography>
           ) : (
             <Grid container spacing={{ xs: 2, md: 4 }}>
-              {featuredCategories.map((category) => (
+              {featuredCategories.map(category => (
                 <Grid item key={category._id} xs={12} sm={6} md={4}>
-                  <Card sx={{ 
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      boxShadow: theme.shadows[10],
-                    },
-                  }}>
-                    <Box 
-                      sx={{ 
+                  <Card
+                    sx={{
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                      '&:hover': {
+                        transform: 'translateY(-5px)',
+                        boxShadow: theme.shadows[10],
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
                         position: 'relative',
                         paddingTop: '70%', // 10:7 aspect ratio
                         width: '100%',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
                       }}
                     >
                       <CardMedia
                         component="img"
-                        sx={{ 
+                        sx={{
                           position: 'absolute',
                           top: 0,
                           left: 0,
                           width: '100%',
                           height: '100%',
                           objectFit: 'cover',
-                          objectPosition: 'center'
+                          objectPosition: 'center',
                         }}
-                        image={category.image || `https://via.placeholder.com/500x240?text=${category.name}`}
+                        image={
+                          category.image ||
+                          `https://via.placeholder.com/500x240?text=${category.name}`
+                        }
                         alt={category.name}
                       />
                     </Box>
-                    <CardContent sx={{ 
-                      flexGrow: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      p: { xs: 1.5, md: 2 },
-                      height: { xs: 'auto', md: '180px' }
-                    }}>
-                      <Typography 
-                        variant="h5" 
-                        component="h3" 
-                        sx={{ 
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        p: { xs: 1.5, md: 2 },
+                        height: { xs: 'auto', md: '180px' },
+                      }}
+                    >
+                      <Typography
+                        variant="h5"
+                        component="h3"
+                        sx={{
                           fontWeight: 'medium',
                           mb: 2,
                           height: { xs: 'auto', md: '60px' },
@@ -366,14 +392,14 @@ const Home = () => {
                           textOverflow: 'ellipsis',
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical'
+                          WebkitBoxOrient: 'vertical',
                         }}
                       >
                         {category.name}
                       </Typography>
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary" 
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
                         sx={{
                           mb: 2,
                           height: { xs: 'auto', md: '60px' },
@@ -382,13 +408,13 @@ const Home = () => {
                           textOverflow: 'ellipsis',
                           display: '-webkit-box',
                           WebkitLineClamp: { xs: 2, md: 3 },
-                          WebkitBoxOrient: 'vertical'
+                          WebkitBoxOrient: 'vertical',
                         }}
                       >
                         {category.description}
                       </Typography>
                       <Box sx={{ mt: { xs: 1, md: 'auto' } }}>
-                        <Button 
+                        <Button
                           component={RouterLink}
                           to={`/catalogue?category=${category._id}`}
                           color="primary"
@@ -406,25 +432,31 @@ const Home = () => {
           )}
         </Box>
 
-        <Paper elevation={0} sx={{ 
-          p: 4, 
-          mb: 8,
-          backgroundColor: theme.palette.background.default,
-          border: `1px solid ${theme.palette.divider}`
-        }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            mb: 8,
+            backgroundColor: theme.palette.background.default,
+            border: `1px solid ${theme.palette.divider}`,
+          }}
+        >
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
               <Typography variant="h3" gutterBottom>
                 About Pischetola Antiques
               </Typography>
               <Typography variant="body1" paragraph>
-                Pischetola Antiques has been a trusted name in the industry for over 30 years. Our collection features carefully selected pieces that represent the finest craftsmanship from various historical periods.
+                Pischetola Antiques has been a trusted name in the industry for over 30 years. Our
+                collection features carefully selected pieces that represent the finest
+                craftsmanship from various historical periods.
               </Typography>
               <Typography variant="body1" paragraph>
-                Each item in our inventory has been authenticated and restored by our team of experts, ensuring both historical accuracy and exceptional quality.
+                Each item in our inventory has been authenticated and restored by our team of
+                experts, ensuring both historical accuracy and exceptional quality.
               </Typography>
-              <Button 
-                variant="outlined" 
+              <Button
+                variant="outlined"
                 color="primary"
                 component={RouterLink}
                 to="/about"
@@ -435,34 +467,40 @@ const Home = () => {
               </Button>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ 
-                height: '300px', 
-                backgroundImage: 'url(https://images.unsplash.com/photo-1551215717-05bc1a6a7ccb?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                borderRadius: 2
-              }} />
+              <Box
+                sx={{
+                  height: '300px',
+                  backgroundImage:
+                    'url(https://images.unsplash.com/photo-1551215717-05bc1a6a7ccb?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  borderRadius: 2,
+                }}
+              />
             </Grid>
           </Grid>
         </Paper>
 
-        <Box sx={{ 
-          mb: 8, 
-          textAlign: 'center',
-          py: 5,
-          px: {xs: 2, md: 8},
-          backgroundColor: theme.palette.primary.main,
-          color: theme.palette.primary.contrastText,
-          borderRadius: 2
-        }}>
+        <Box
+          sx={{
+            mb: 8,
+            textAlign: 'center',
+            py: 5,
+            px: { xs: 2, md: 8 },
+            backgroundColor: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
+            borderRadius: 2,
+          }}
+        >
           <Typography variant="h3" gutterBottom>
             Request an Estimate
           </Typography>
           <Typography variant="body1" sx={{ mb: 4, maxWidth: '800px', mx: 'auto' }}>
-            Have an antique item you'd like to sell or get appraised? Our team of experts can provide you with a detailed estimate of its value.
+            Have an antique item you'd like to sell or get appraised? Our team of experts can
+            provide you with a detailed estimate of its value.
           </Typography>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             color="secondary"
             component={RouterLink}
             to="/contact"
@@ -477,4 +515,4 @@ const Home = () => {
   );
 };
 
-export default Home; 
+export default Home;
