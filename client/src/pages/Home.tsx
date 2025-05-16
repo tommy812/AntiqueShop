@@ -24,7 +24,7 @@ import { Category } from '../services/categoryService';
 import { Product } from '../services/productService';
 
 // Import components
-import { HeroSection } from '../components/styled/HeroSection';
+import { VideoHeroSection } from '../components/styled/VideoHeroSection';
 
 // Import image utilities
 import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from '../utils/imageUtils';
@@ -95,7 +95,7 @@ const Home = () => {
 
   return (
     <Box>
-      <HeroSection>
+      <VideoHeroSection>
         <Typography
           variant="h1"
           gutterBottom
@@ -157,7 +157,7 @@ const Home = () => {
             {t('homepage.hero.looking_to_sell')}
           </Button>
         </Box>
-      </HeroSection>
+      </VideoHeroSection>
 
       <Container maxWidth="lg">
         {/* Featured Products Section */}
