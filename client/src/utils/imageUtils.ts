@@ -22,11 +22,19 @@ export const getImageUrl = (imagePath?: string): string => {
   if (!imagePath) return DEFAULT_FALLBACK_IMAGE;
 
   // If the image already has a full URL (starts with http), return it as is
+  // This handles Vercel Blob URLs which are complete URLs
   if (imagePath.startsWith('http')) {
     return imagePath;
   }
 
-  // Make sure the image path starts with a slash
+  // Special case for Vercel Blob filenames (they contain the pathname)
+  if (imagePath.startsWith('products/')) {
+    // This is a Vercel Blob path reference without the full URL
+    // The client should request the full URL from the API
+    return `${API_BASE_URL}/api/upload/product/${imagePath.split('/')[1]}`;
+  }
+
+  // Make sure the image path starts with a slash for traditional uploads
   const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
 
   return `${API_BASE_URL}${normalizedPath}`;
@@ -64,11 +72,22 @@ export const getProductImageUrls = (images?: string[]): string[] => {
   return images.map(img => getImageUrl(img));
 };
 
+/**
+ * Determine if an image URL is a Vercel Blob URL
+ *
+ * @param url - The image URL to check
+ * @returns Boolean indicating if it's a Vercel Blob URL
+ */
+export const isVercelBlobUrl = (url: string): boolean => {
+  return url.includes('.public.blob.vercel-storage.com') || url.includes('vercel-blob.com');
+};
+
 // Create exportable utilities object
 const imageUtils = {
   getImageUrl,
   getThumbnailUrl,
   getProductImageUrls,
+  isVercelBlobUrl,
   DEFAULT_FALLBACK_IMAGE,
 };
 

@@ -38,10 +38,10 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static files directory for uploaded images
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-// Also make uploads available at the root path for easier access
-app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
+// No longer need static file serving for uploads with Vercel Blob
+// We'll keep this commented in case we need it for backward compatibility
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB connection
 const connectDB = async () => {

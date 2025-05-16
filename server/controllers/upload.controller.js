@@ -1,22 +1,18 @@
-const fs = require('fs');
-const path = require('path');
+const { put, del, list } = require('@vercel/blob');
 
-// Determine if we're in a serverless environment (like Vercel)
-const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_VERSION;
+// Maximum number of images per product
+const MAX_IMAGES_PER_PRODUCT = 15;
 
-// In-memory storage for serverless environments
-const memoryStorage = {
-  files: [],
-};
-
-// Helper to get file path for the client
-const getFilePath = file => {
-  if (isServerless) {
-    // For memory storage, we'll use a virtual path
-    return `/uploads/${file.originalname}-${Date.now()}`;
-  } else {
-    // For disk storage, use the actual file path
-    return `/uploads/${file.filename}`;
+// Helper to get in-memory image count for a product
+const getProductImageCount = async productId => {
+  try {
+    const { blobs } = await list({
+      prefix: `products/${productId}/`,
+    });
+    return blobs.length;
+  } catch (error) {
+    console.error('Error counting product images:', error);
+    return 0;
   }
 };
 
@@ -27,45 +23,34 @@ exports.uploadSingleImage = async (req, res) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    // Handle storage based on environment
-    if (isServerless) {
-      // Store file in memory for serverless environments
-      const fileId = Date.now().toString();
-      const memFile = {
-        id: fileId,
-        originalname: req.file.originalname,
-        buffer: req.file.buffer,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-      };
+    const productId = req.body.productId || 'general';
 
-      // Store in memory
-      memoryStorage.files.push(memFile);
-
-      // Create virtual path
-      const virtualPath = `/uploads/${fileId}-${req.file.originalname}`;
-
-      return res.json({
-        message: 'File uploaded successfully (memory storage)',
-        file: {
-          id: fileId,
-          originalname: req.file.originalname,
-          path: virtualPath,
-          size: req.file.size,
-          mimetype: req.file.mimetype,
-        },
-      });
+    // Check image count for this product if a productId is provided
+    if (productId !== 'general') {
+      const currentCount = await getProductImageCount(productId);
+      if (currentCount >= MAX_IMAGES_PER_PRODUCT) {
+        return res.status(400).json({
+          message: `Maximum of ${MAX_IMAGES_PER_PRODUCT} images allowed per product. Please delete some images first.`,
+        });
+      }
     }
 
-    // For disk storage environments
-    const relativePath = `/uploads/${req.file.filename}`;
+    // Create filename with path structure
+    const filename = `products/${productId}/${Date.now()}-${req.file.originalname}`;
 
-    res.json({
+    // Upload to Vercel Blob
+    const blob = await put(filename, req.file.buffer, {
+      access: 'public',
+      contentType: req.file.mimetype,
+    });
+
+    return res.json({
       message: 'File uploaded successfully',
       file: {
-        filename: req.file.filename,
+        id: blob.pathname,
+        filename: blob.pathname,
         originalname: req.file.originalname,
-        path: relativePath,
+        path: blob.url,
         size: req.file.size,
         mimetype: req.file.mimetype,
       },
@@ -83,49 +68,47 @@ exports.uploadMultipleImages = async (req, res) => {
       return res.status(400).json({ message: 'No files uploaded' });
     }
 
-    // Handle storage based on environment
-    if (isServerless) {
-      // Store files in memory
-      const uploadedFiles = req.files.map(file => {
-        const fileId = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        const memFile = {
-          id: fileId,
-          originalname: file.originalname,
-          buffer: file.buffer,
-          mimetype: file.mimetype,
-          size: file.size,
-        };
+    const productId = req.body.productId || 'general';
 
-        // Store in memory
-        memoryStorage.files.push(memFile);
+    // Check existing image count for this product
+    if (productId !== 'general') {
+      const currentCount = await getProductImageCount(productId);
+      const totalAfterUpload = currentCount + req.files.length;
 
-        return {
-          id: fileId,
-          originalname: file.originalname,
-          path: `/uploads/${fileId}-${file.originalname}`,
-          size: file.size,
-          mimetype: file.mimetype,
-        };
-      });
-
-      return res.json({
-        message: `${req.files.length} file(s) uploaded successfully (memory storage)`,
-        files: uploadedFiles,
-      });
+      if (totalAfterUpload > MAX_IMAGES_PER_PRODUCT) {
+        return res.status(400).json({
+          message: `Maximum of ${MAX_IMAGES_PER_PRODUCT} images allowed per product. You can upload ${MAX_IMAGES_PER_PRODUCT - currentCount} more.`,
+        });
+      }
     }
 
-    // For disk storage environments
-    const fileDetails = req.files.map(file => ({
-      filename: file.filename,
-      originalname: file.originalname,
-      path: `/uploads/${file.filename}`,
-      size: file.size,
-      mimetype: file.mimetype,
-    }));
+    // Limit the number of files to process
+    const filesToProcess = req.files.slice(0, MAX_IMAGES_PER_PRODUCT);
 
-    res.json({
-      message: `${req.files.length} file(s) uploaded successfully`,
-      files: fileDetails,
+    // Upload each file to Vercel Blob
+    const uploadPromises = filesToProcess.map(async file => {
+      const filename = `products/${productId}/${Date.now()}-${file.originalname}`;
+
+      const blob = await put(filename, file.buffer, {
+        access: 'public',
+        contentType: file.mimetype,
+      });
+
+      return {
+        id: blob.pathname,
+        filename: blob.pathname,
+        originalname: file.originalname,
+        path: blob.url,
+        size: file.size,
+        mimetype: file.mimetype,
+      };
+    });
+
+    const uploadedFiles = await Promise.all(uploadPromises);
+
+    return res.json({
+      message: `${uploadedFiles.length} file(s) uploaded successfully`,
+      files: uploadedFiles,
     });
   } catch (err) {
     console.error('Upload error:', err);
@@ -142,33 +125,8 @@ exports.deleteFile = async (req, res) => {
       return res.status(400).json({ message: 'Filename is required' });
     }
 
-    // Handle storage based on environment
-    if (isServerless) {
-      // For memory storage
-      const fileIndex = memoryStorage.files.findIndex(
-        file => file.id === filename || `${file.id}-${file.originalname}` === filename
-      );
-
-      if (fileIndex === -1) {
-        return res.status(404).json({ message: 'File not found in memory storage' });
-      }
-
-      // Remove from memory
-      memoryStorage.files.splice(fileIndex, 1);
-
-      return res.json({ message: 'File deleted successfully from memory' });
-    }
-
-    // For disk storage
-    const filePath = path.join(__dirname, '../uploads', filename);
-
-    // Check if file exists
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ message: 'File not found' });
-    }
-
-    // Delete file
-    fs.unlinkSync(filePath);
+    // Delete from Vercel Blob
+    await del(filename);
 
     res.json({ message: 'File deleted successfully' });
   } catch (err) {
@@ -177,36 +135,33 @@ exports.deleteFile = async (req, res) => {
   }
 };
 
-// Serve a file from memory storage (for serverless environments)
-exports.serveFile = async (req, res) => {
+// List images for a product
+exports.listProductImages = async (req, res) => {
   try {
-    const fileId = req.params.fileId;
+    const productId = req.params.productId;
 
-    if (!fileId) {
-      return res.status(400).json({ message: 'File ID is required' });
+    if (!productId) {
+      return res.status(400).json({ message: 'Product ID is required' });
     }
 
-    // For serverless environment, find file in memory
-    if (isServerless) {
-      const file = memoryStorage.files.find(
-        file => file.id === fileId || `${file.id}-${file.originalname}` === fileId
-      );
+    const { blobs } = await list({
+      prefix: `products/${productId}/`,
+    });
 
-      if (!file) {
-        return res.status(404).json({ message: 'File not found in memory storage' });
-      }
+    const files = blobs.map(blob => ({
+      id: blob.pathname,
+      filename: blob.pathname,
+      path: blob.url,
+      size: blob.size,
+      uploadedAt: blob.uploadedAt,
+    }));
 
-      // Set content type
-      res.setHeader('Content-Type', file.mimetype);
-
-      // Send buffer
-      return res.send(file.buffer);
-    }
-
-    // For disk storage (this shouldn't be called, but just in case)
-    res.status(400).json({ message: 'This endpoint is only for serverless environments' });
+    return res.json({
+      message: `Found ${files.length} image(s) for product ${productId}`,
+      files,
+    });
   } catch (err) {
-    console.error('Serve file error:', err);
+    console.error('List images error:', err);
     res.status(500).json({ message: err.message });
   }
 };
