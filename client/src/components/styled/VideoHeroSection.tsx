@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, styled } from '@mui/material';
 
 // The video URL from mixkit
@@ -83,39 +83,80 @@ export const VideoHeroSection: React.FC<VideoHeroSectionProps> = ({ children }) 
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Check if device is mobile on component mount - keeping this for analytics
-  // but no longer using it to disable video
+  // Check if device is mobile on component mount
   useEffect(() => {
     setIsMobile(isMobileDevice());
   }, []);
 
+  // Preload the video when component mounts
+  useEffect(() => {
+    // Create a new HTMLVideoElement to preload the video
+    const preloadVideo = new Image();
+    preloadVideo.src = fallbackImage;
+
+    // Create a new video element for preloading
+    const videoPreload = document.createElement('video');
+    videoPreload.src = videoUrl;
+    videoPreload.preload = 'auto';
+    videoPreload.load();
+
+    // Return cleanup function
+    return () => {
+      // Clean up preloading resources
+      videoPreload.src = '';
+      preloadVideo.src = '';
+    };
+  }, []);
+
   // Handle video load success
   const handleVideoLoaded = () => {
+    console.log('Video loaded successfully');
     setVideoLoaded(true);
   };
 
   // Handle video load error
-  const handleVideoError = () => {
+  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+    console.error('Video load error:', e);
     setVideoError(true);
-    console.error('Failed to load background video');
   };
 
-  // Check if browser supports autoplay, for all devices now
+  // Initialize video on mount
   useEffect(() => {
-    const video = document.querySelector('video');
-    if (video) {
-      const playPromise = video.play();
+    if (videoRef.current) {
+      // Set properties
+      videoRef.current.muted = true;
+      videoRef.current.playsInline = true;
+      videoRef.current.autoplay = true;
+      videoRef.current.loop = true;
+
+      // Attempt to load and play the video
+      const playPromise = videoRef.current.play();
+
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
             // Autoplay started successfully
+            console.log('Video autoplay started successfully');
             setVideoLoaded(true);
           })
           .catch(error => {
             // Autoplay was prevented
-            setVideoError(true);
             console.error('Autoplay prevented:', error);
+            // Try playing again on user interaction
+            document.addEventListener(
+              'click',
+              () => {
+                if (videoRef.current) {
+                  videoRef.current.play().catch(err => {
+                    console.error('Play on click failed:', err);
+                    setVideoError(true);
+                  });
+                }
+              },
+              { once: true }
+            );
           });
       }
     }
@@ -125,13 +166,10 @@ export const VideoHeroSection: React.FC<VideoHeroSectionProps> = ({ children }) 
     <VideoContainer>
       {!videoError && (
         <VideoBackground
-          autoPlay
-          loop
-          muted
-          playsInline
+          ref={videoRef}
           preload="auto"
           poster={fallbackImage}
-          onCanPlay={handleVideoLoaded}
+          onLoadedData={handleVideoLoaded}
           onError={handleVideoError}
         >
           <source src={videoUrl} type="video/mp4" />
