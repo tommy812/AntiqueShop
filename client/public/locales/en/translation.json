@@ -95,5 +95,67 @@
     "select": "Select Language",
     "en": "English",
     "it": "Italian"
+  },
+  "error": {
+    "unauthorized": {
+      "title": "Access Denied",
+      "message": "You don't have permission to access this page. If you believe this is an error, please contact the administrator."
+    },
+    "notFound": {
+      "title": "Page Not Found",
+      "message": "The page you are looking for does not exist or has been moved."
+    },
+    "serverError": {
+      "title": "Server Error",
+      "message": "Something went wrong on our end. Please try again later."
+    }
+  },
+  "common": {
+    "backToHome": "Back to Home",
+    "contactSupport": "Contact Support",
+    "loadMore": "Load More",
+    "viewDetails": "View Details",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "loading": "Loading...",
+    "noResults": "No results found"
+  },
+  "form": {
+    "selectPlaceholder": "Select...",
+    "required": "Required",
+    "optional": "Optional",
+    "validationErrors": {
+      "required": "This field is required",
+      "email": "Please enter a valid email address",
+      "minLength": "Must be at least {0} characters",
+      "maxLength": "Must be no more than {0} characters",
+      "pattern": "Please enter a valid format",
+      "number": "Please enter a valid number",
+      "fileSize": "File is too large",
+      "fileType": "File type not supported"
+    }
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "categories": "Categories",
+    "periods": "Periods",
+    "messages": "Messages",
+    "settings": "Settings",
+    "theme": "Theme",
+    "users": "Users",
+    "addProduct": "Add Product",
+    "editProduct": "Edit Product",
+    "addCategory": "Add Category",
+    "editCategory": "Edit Category",
+    "addPeriod": "Add Period",
+    "editPeriod": "Edit Period"
   }
-} 
+}

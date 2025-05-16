@@ -115,7 +115,7 @@ const FormField: React.FC<FormFieldProps> = ({
           sx={{ minWidth: '150px' }}
         >
           <MenuItem value="">
-            <em>{t('form.selectPlaceholder', 'Select...')}</em>
+            <em>{t('form.selectPlaceholder')}</em>
           </MenuItem>
           {options.map(option => (
             <MenuItem key={option.value} value={option.value}>

@@ -95,5 +95,67 @@
     "select": "Seleziona Lingua",
     "en": "Inglese",
     "it": "Italiano"
+  },
+  "error": {
+    "unauthorized": {
+      "title": "Accesso Negato",
+      "message": "Non hai il permesso di accedere a questa pagina. Se ritieni che si tratti di un errore, contatta l'amministratore."
+    },
+    "notFound": {
+      "title": "Pagina Non Trovata",
+      "message": "La pagina che stai cercando non esiste o è stata spostata."
+    },
+    "serverError": {
+      "title": "Errore del Server",
+      "message": "Si è verificato un problema sul nostro server. Riprova più tardi."
+    }
+  },
+  "common": {
+    "backToHome": "Torna alla Home",
+    "contactSupport": "Contatta il Supporto",
+    "loadMore": "Carica Altri",
+    "viewDetails": "Vedi Dettagli",
+    "apply": "Applica",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "create": "Crea",
+    "search": "Cerca",
+    "filter": "Filtra",
+    "reset": "Reimposta",
+    "loading": "Caricamento...",
+    "noResults": "Nessun risultato trovato"
+  },
+  "form": {
+    "selectPlaceholder": "Seleziona...",
+    "required": "Obbligatorio",
+    "optional": "Opzionale",
+    "validationErrors": {
+      "required": "Questo campo è obbligatorio",
+      "email": "Inserisci un indirizzo email valido",
+      "minLength": "Deve contenere almeno {0} caratteri",
+      "maxLength": "Deve contenere massimo {0} caratteri",
+      "pattern": "Inserisci un formato valido",
+      "number": "Inserisci un numero valido",
+      "fileSize": "Il file è troppo grande",
+      "fileType": "Tipo di file non supportato"
+    }
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "products": "Prodotti",
+    "categories": "Categorie",
+    "periods": "Periodi",
+    "messages": "Messaggi",
+    "settings": "Impostazioni",
+    "theme": "Tema",
+    "users": "Utenti",
+    "addProduct": "Aggiungi Prodotto",
+    "editProduct": "Modifica Prodotto",
+    "addCategory": "Aggiungi Categoria",
+    "editCategory": "Modifica Categoria",
+    "addPeriod": "Aggiungi Periodo",
+    "editPeriod": "Modifica Periodo"
   }
-} 
+}

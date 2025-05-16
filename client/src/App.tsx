@@ -23,6 +23,7 @@ const Contact = lazy(() => import('./pages/Contact'));
 const Admin = lazy(() => import('./pages/Admin'));
 const Login = lazy(() => import('./pages/Login'));
 const Unauthorized = lazy(() => import('./pages/Unauthorized'));
+const TranslationTester = lazy(() => import('./components/TranslationTester'));
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -51,14 +52,15 @@ const App: React.FC = () => {
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/unauthorized" element={<Unauthorized />} />
-                    <Route 
-                      path="/admin/*" 
+                    <Route
+                      path="/admin/*"
                       element={
                         <ProtectedRoute requiredRole="admin">
                           <Admin />
                         </ProtectedRoute>
-                      } 
+                      }
                     />
+                    <Route path="/test-translations" element={<TranslationTester />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </Suspense>
