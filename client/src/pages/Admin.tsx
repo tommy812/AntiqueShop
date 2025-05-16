@@ -659,9 +659,6 @@ const Admin = () => {
     try {
       setLoading(true);
 
-      // Create FormData object for file uploads
-      const formData = new FormData();
-
       // Debug the values being sent
       console.log('Sending product data:', {
         name: newProduct.name,
@@ -672,15 +669,25 @@ const Admin = () => {
       });
 
       // Make sure we have required fields
-      if (!newProduct.name || !newProduct.description || !newProduct.price) {
+      if (
+        !newProduct.name ||
+        !newProduct.description ||
+        !newProduct.price ||
+        !newProduct.category ||
+        !newProduct.period
+      ) {
         setSnackbar({
           open: true,
-          message: 'Please fill in all required fields: name, description, and price',
+          message:
+            'Please fill in all required fields: name, description, price, category, and period',
           severity: 'error',
         });
         setLoading(false);
         return;
       }
+
+      // Create FormData object for file uploads
+      const formData = new FormData();
 
       formData.append('name', newProduct.name);
       formData.append('description', newProduct.description);
@@ -1117,6 +1124,23 @@ const Admin = () => {
 
   const handleSaveProduct = async () => {
     if (!editProduct) return;
+
+    // Check required fields
+    if (
+      !editProduct.name ||
+      !editProduct.description ||
+      !editProduct.price ||
+      !editProduct.category ||
+      !editProduct.period
+    ) {
+      setSnackbar({
+        open: true,
+        message:
+          'Please fill in all required fields: name, description, price, category, and period',
+        severity: 'error',
+      });
+      return;
+    }
 
     try {
       setLoading(true);
@@ -2377,7 +2401,7 @@ const Admin = () => {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth margin="normal" sx={{ minWidth: 200 }}>
+              <FormControl fullWidth margin="normal" sx={{ minWidth: 200 }} required>
                 <InputLabel>Category</InputLabel>
                 <Select
                   name="category"
@@ -2397,9 +2421,14 @@ const Admin = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth margin="normal" sx={{ minWidth: 200 }}>
+              <FormControl fullWidth margin="normal" sx={{ minWidth: 200 }} required>
                 <InputLabel>Period</InputLabel>
-                <Select name="period" value={newProduct.period} onChange={handleProductChange}>
+                <Select
+                  name="period"
+                  value={newProduct.period}
+                  onChange={handleProductChange}
+                  required
+                >
                   <MenuItem value="">
                     <em>Select a period</em>
                   </MenuItem>
@@ -2580,7 +2609,14 @@ const Admin = () => {
             variant="contained"
             color="primary"
             onClick={handleAddProduct}
-            disabled={!newProduct.name || !newProduct.price || !newProduct.description || loading}
+            disabled={
+              !newProduct.name ||
+              !newProduct.price ||
+              !newProduct.description ||
+              !newProduct.category ||
+              !newProduct.period ||
+              loading
+            }
           >
             {loading ? <CircularProgress size={24} /> : 'Add Product'}
           </Button>
@@ -2638,7 +2674,7 @@ const Admin = () => {
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth margin="normal" sx={{ minWidth: 200 }}>
+                <FormControl fullWidth margin="normal" sx={{ minWidth: 200 }} required>
                   <InputLabel>Category</InputLabel>
                   <Select
                     name="category"
@@ -2658,12 +2694,13 @@ const Admin = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth margin="normal" sx={{ minWidth: 200 }}>
+                <FormControl fullWidth margin="normal" sx={{ minWidth: 200 }} required>
                   <InputLabel>Period</InputLabel>
                   <Select
                     name="period"
                     value={editProduct.period}
                     onChange={handleEditProductChange}
+                    required
                   >
                     <MenuItem value="">
                       <em>Select a period</em>
@@ -2858,6 +2895,8 @@ const Admin = () => {
               !editProduct.name ||
               !editProduct.price ||
               !editProduct.description ||
+              !editProduct.category ||
+              !editProduct.period ||
               loading
             }
           >
