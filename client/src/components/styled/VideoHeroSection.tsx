@@ -68,6 +68,7 @@ const ContentContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   maxWidth: '1200px',
   padding: theme.spacing(0, 2),
+  textAlign: 'center',
 }));
 
 interface VideoHeroSectionProps {
