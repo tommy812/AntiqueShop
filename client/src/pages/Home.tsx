@@ -112,13 +112,17 @@ const Home = () => {
           variant="h4"
           sx={{
             maxWidth: '800px',
-            mb: 4,
+            mb: 6,
+            pb: 4,
             fontWeight: 400,
             textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+            margin: '0 auto',
+            textAlign: 'center',
           }}
         >
           {t('homepage.hero.subtitle')}
         </Typography>
+        <Box sx={{ height: 20 }}></Box>
         <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
           <Button
             variant="contained"
@@ -137,7 +141,7 @@ const Home = () => {
             {t('homepage.hero.looking_to_buy')}
           </Button>
           <Button
-            variant="outlined"
+            variant="contained"
             color="secondary"
             size="large"
             component={RouterLink}
@@ -148,10 +152,6 @@ const Home = () => {
               fontSize: '1.1rem',
               px: 4,
               py: 1.5,
-              backgroundColor: 'rgba(255, 255, 255, 0.15)',
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.25)',
-              },
             }}
           >
             {t('homepage.hero.looking_to_sell')}

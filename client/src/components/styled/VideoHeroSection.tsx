@@ -69,6 +69,10 @@ const ContentContainer = styled(Box)(({ theme }) => ({
   maxWidth: '1200px',
   padding: theme.spacing(0, 2),
   textAlign: 'center',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center', // Center children horizontally
+  margin: '0 auto', // Center container itself
 }));
 
 interface VideoHeroSectionProps {
