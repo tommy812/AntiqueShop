@@ -16,6 +16,41 @@ const getProductImageCount = async productId => {
   }
 };
 
+// Upload category image
+exports.uploadCategoryImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const categoryId = req.body.categoryId || 'general';
+
+    // Create filename with path structure for categories
+    const filename = `categories/${categoryId}/${Date.now()}-${req.file.originalname}`;
+
+    // Upload to Vercel Blob
+    const blob = await put(filename, req.file.buffer, {
+      access: 'public',
+      contentType: req.file.mimetype,
+    });
+
+    return res.json({
+      message: 'Category image uploaded successfully',
+      file: {
+        id: blob.pathname,
+        filename: blob.pathname,
+        originalname: req.file.originalname,
+        path: blob.url,
+        size: req.file.size,
+        mimetype: req.file.mimetype,
+      },
+    });
+  } catch (err) {
+    console.error('Category image upload error:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // Upload single image
 exports.uploadSingleImage = async (req, res) => {
   try {

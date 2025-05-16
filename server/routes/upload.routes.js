@@ -7,6 +7,15 @@ const { verifyToken, isAdmin } = require('../middleware/auth.middleware');
 // Upload a single image (admin only)
 router.post('/', verifyToken, isAdmin, upload.single('image'), uploadController.uploadSingleImage);
 
+// Upload category image (admin only)
+router.post(
+  '/category',
+  verifyToken,
+  isAdmin,
+  upload.single('image'),
+  uploadController.uploadCategoryImage
+);
+
 // Upload multiple images (admin only, limit to 15 per upload)
 router.post(
   '/multiple',

@@ -69,6 +69,8 @@ import messageService, { Message } from '../services/messageService';
 import { useSettings } from '../contexts/SettingsContext';
 import settingsService, { SiteSettings } from '../services/settingsService';
 import BlobImageManager from '../components/admin/BlobImageManager';
+import CategoryBlobImageManager from '../components/admin/CategoryBlobImageManager';
+import { isVercelBlobUrl } from '../utils/imageUtils';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -155,6 +157,7 @@ const Admin = () => {
     name: '',
     description: '',
     image: '',
+    blobImage: '',
   });
   const [newPeriod, setNewPeriod] = useState({
     name: '',
@@ -787,7 +790,7 @@ const Admin = () => {
           name: newCategory.name,
           description: newCategory.description,
           featured: false,
-          image: newCategory.image,
+          image: newCategory.blobImage || newCategory.image, // Use blob image if available
         };
 
         const result = await categoryService.createCategory(newCategoryData);
@@ -796,6 +799,7 @@ const Admin = () => {
           name: '',
           description: '',
           image: '',
+          blobImage: '',
         });
         setOpenDialog(null);
         setSnackbar({
@@ -821,6 +825,14 @@ const Admin = () => {
     setNewCategory(prev => ({
       ...prev,
       [name]: value,
+    }));
+  };
+
+  const handleCategoryBlobImageChange = (image: string) => {
+    setNewCategory(prev => ({
+      ...prev,
+      blobImage: image, // Store blob URL
+      image: '', // Clear old URL-based image if any
     }));
   };
 
@@ -1173,6 +1185,8 @@ const Admin = () => {
     name: string;
     description: string;
     image: string;
+    blobImage: string;
+    featured: boolean;
   }>(null);
 
   const [editPeriod, setEditPeriod] = useState<null | {
@@ -1186,10 +1200,12 @@ const Admin = () => {
   // Handle opening edit category dialog
   const handleOpenEditCategoryDialog = (category: Category) => {
     setEditCategory({
-      _id: category._id!,
+      _id: category._id || '',
       name: category.name,
       description: category.description || '',
       image: category.image || '',
+      blobImage: isVercelBlobUrl(category.image || '') ? category.image || '' : '',
+      featured: category.featured || false,
     });
     setOpenDialog('edit-category');
   };
@@ -1207,22 +1223,25 @@ const Admin = () => {
 
   // Save edited category
   const handleSaveCategory = async () => {
-    if (!editCategory) return;
+    if (!editCategory || !editCategory.name) return;
 
     try {
       setLoading(true);
-      const updatedCategory = await categoryService.updateCategory(editCategory._id, {
+      const updatedCategoryData = {
         name: editCategory.name,
         description: editCategory.description,
-        image: editCategory.image,
-      });
+        featured: editCategory.featured,
+        image: editCategory.blobImage || editCategory.image, // Use blob image if available
+      };
 
-      // Update categories list with edited category
-      setCategories(categories.map(c => (c._id === editCategory._id ? updatedCategory : c)));
+      const result = await categoryService.updateCategory(editCategory._id!, updatedCategoryData);
+
+      // Update categories state
+      setCategories(
+        categories.map(category => (category._id === editCategory._id ? result : category))
+      );
 
       setOpenDialog(null);
-      setEditCategory(null);
-
       setSnackbar({
         open: true,
         message: 'Category updated successfully',
@@ -1296,6 +1315,16 @@ const Admin = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEditCategoryBlobImageChange = (image: string) => {
+    if (editCategory) {
+      setEditCategory(prev => ({
+        ...prev!,
+        blobImage: image,
+        image: '',
+      }));
     }
   };
 
@@ -2209,6 +2238,11 @@ const Admin = () => {
             margin="normal"
             helperText="Link to a representative image"
           />
+          <CategoryBlobImageManager
+            categoryId="general"
+            existingImage={newCategory.blobImage}
+            onImageChange={handleCategoryBlobImageChange}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(null)}>Cancel</Button>
@@ -2870,6 +2904,11 @@ const Admin = () => {
                 onChange={handleEditCategoryChange}
                 margin="normal"
                 helperText="Link to a representative image"
+              />
+              <CategoryBlobImageManager
+                categoryId={editCategory._id}
+                existingImage={editCategory.blobImage}
+                onImageChange={handleEditCategoryBlobImageChange}
               />
             </>
           )}
