@@ -84,7 +84,8 @@ export const VideoHeroSection: React.FC<VideoHeroSectionProps> = ({ children }) 
   const [videoError, setVideoError] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Check if device is mobile on component mount
+  // Check if device is mobile on component mount - keeping this for analytics
+  // but no longer using it to disable video
   useEffect(() => {
     setIsMobile(isMobileDevice());
   }, []);
@@ -100,14 +101,8 @@ export const VideoHeroSection: React.FC<VideoHeroSectionProps> = ({ children }) 
     console.error('Failed to load background video');
   };
 
-  // Check if browser supports autoplay
+  // Check if browser supports autoplay, for all devices now
   useEffect(() => {
-    // Skip autoplay check on mobile devices
-    if (isMobile) {
-      setVideoError(true);
-      return;
-    }
-
     const video = document.querySelector('video');
     if (video) {
       const playPromise = video.play();
@@ -124,11 +119,11 @@ export const VideoHeroSection: React.FC<VideoHeroSectionProps> = ({ children }) 
           });
       }
     }
-  }, [isMobile]);
+  }, []);
 
   return (
     <VideoContainer>
-      {!videoError && !isMobile && (
+      {!videoError && (
         <VideoBackground
           autoPlay
           loop
