@@ -198,6 +198,7 @@ const Admin = () => {
     history: string;
     delivery: string;
     featured: boolean;
+    blobImages: string[];
   }>(null);
 
   // New state for dashboard stats
@@ -642,6 +643,15 @@ const Admin = () => {
     }));
   };
 
+  const handleEditBlobImagesChange = (images: string[]) => {
+    if (editProduct) {
+      setEditProduct(prev => ({
+        ...prev!,
+        blobImages: images, // Store blob URLs separately for edit form
+      }));
+    }
+  };
+
   const handleAddProduct = async () => {
     try {
       setLoading(true);
@@ -735,6 +745,9 @@ const Admin = () => {
         delivery: '',
         featured: false,
       });
+
+      // Close the dialog
+      setOpenDialog(null);
 
       setSnackbar({
         open: true,
@@ -1030,6 +1043,9 @@ const Admin = () => {
       periodId = product.period;
     }
 
+    // Get product images (all images are considered "blob images" in the edit form)
+    const productImages = product.images || [];
+
     setEditProduct({
       _id: product._id!,
       name: product.name,
@@ -1049,6 +1065,7 @@ const Admin = () => {
       history: product.history || '',
       delivery: product.delivery || '',
       featured: product.featured || false,
+      blobImages: productImages,
     });
     setOpenDialog('edit-product');
   };
@@ -1105,6 +1122,13 @@ const Admin = () => {
       formData.append('history', editProduct.history);
       formData.append('delivery', editProduct.delivery);
       formData.append('featured', String(editProduct.featured));
+
+      // If we have Blob image URLs, include them directly
+      if (editProduct.blobImages && editProduct.blobImages.length > 0) {
+        editProduct.blobImages.forEach((imageUrl, index) => {
+          formData.append(`blobImages[${index}]`, imageUrl);
+        });
+      }
 
       const result = await productService.updateProduct(editProduct._id, formData);
 
@@ -2646,6 +2670,19 @@ const Admin = () => {
                   placeholder="History of ownership"
                 />
               </Grid>
+
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Product Images
+                </Typography>
+                <BlobImageManager
+                  productId={editProduct._id}
+                  existingImages={editProduct.blobImages}
+                  onImagesChange={handleEditBlobImagesChange}
+                  maxImages={15}
+                />
+              </Grid>
+
               <Grid item xs={12}>
                 <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
                   Dimensions

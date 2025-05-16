@@ -55,6 +55,11 @@ const BlobImageManager: React.FC<BlobImageManagerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  // Update images state when existingImages prop changes
+  useEffect(() => {
+    setImages(existingImages);
+  }, [existingImages]);
+
   useEffect(() => {
     // If we have an existing product, fetch its images from the blob storage
     if (productId && productId !== 'new') {
