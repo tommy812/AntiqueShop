@@ -62,29 +62,49 @@ const BlobImageManager: React.FC<BlobImageManagerProps> = ({
 
   useEffect(() => {
     // If we have an existing product, fetch its images from the blob storage
-    if (productId && productId !== 'new') {
+    if (productId && productId !== 'new' && productId !== 'general') {
+      console.log('Fetching images for product:', productId);
       fetchProductImages();
+    } else {
+      console.log('Using existing images for product:', productId, existingImages);
     }
   }, [productId]);
 
   const fetchProductImages = async () => {
     try {
       setLoading(true);
+      console.log('Making API request to fetch images for product:', productId);
       const response = await api.get(`/upload/product/${productId}`);
+      console.log('API response for product images:', response.data);
 
       // Extract image URLs from the response
       const imageUrls = response.data.files.map((file: any) => file.path);
-      setImages(imageUrls);
+      console.log('Extracted image URLs:', imageUrls);
 
-      // Notify parent component if needed
-      if (onImagesChange) {
-        onImagesChange(imageUrls);
+      // Only update if we have images and they're different from current
+      if (imageUrls && imageUrls.length > 0) {
+        setImages(imageUrls);
+
+        // Notify parent component if needed
+        if (onImagesChange) {
+          onImagesChange(imageUrls);
+        }
+      } else if (existingImages && existingImages.length > 0) {
+        // Use existing images if API didn't return any
+        console.log('Using existing images instead:', existingImages);
+        setImages(existingImages);
       }
 
       setError(null);
     } catch (err: any) {
       console.error('Error fetching product images:', err);
       setError('Failed to fetch product images');
+
+      // Fall back to existing images
+      if (existingImages && existingImages.length > 0) {
+        console.log('Falling back to existing images:', existingImages);
+        setImages(existingImages);
+      }
     } finally {
       setLoading(false);
     }

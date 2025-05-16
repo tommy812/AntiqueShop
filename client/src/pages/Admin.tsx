@@ -1027,6 +1027,10 @@ const Admin = () => {
   };
 
   const handleOpenEditDialog = (product: Product) => {
+    // Debug the product object
+    console.log('Opening edit dialog for product:', product);
+    console.log('Product images:', product.images);
+
     // Determine category ID
     let categoryId = '';
     if (typeof product.category === 'object' && product.category && '_id' in product.category) {
@@ -1124,11 +1128,19 @@ const Admin = () => {
       formData.append('featured', String(editProduct.featured));
 
       // If we have Blob image URLs, include them directly
+      console.log('Blob images to save:', editProduct.blobImages);
       if (editProduct.blobImages && editProduct.blobImages.length > 0) {
         editProduct.blobImages.forEach((imageUrl, index) => {
+          console.log(`Adding blobImages[${index}]:`, imageUrl);
           formData.append(`blobImages[${index}]`, imageUrl);
         });
       }
+
+      // Log the FormData contents for debugging
+      console.log('Form data to be sent:');
+      Array.from(formData.entries()).forEach(pair => {
+        console.log(pair[0] + ': ' + pair[1]);
+      });
 
       const result = await productService.updateProduct(editProduct._id, formData);
 

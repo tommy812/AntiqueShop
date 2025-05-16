@@ -407,9 +407,9 @@ exports.updateProduct = async (req, res) => {
     };
 
     // Handle blob images
+    console.log('Processing blob images:', req.body.blobImages);
+    let blobImages = [];
     if (req.body.blobImages) {
-      let blobImages = [];
-
       // Check if it's an array or a string
       if (Array.isArray(req.body.blobImages)) {
         blobImages = req.body.blobImages;
@@ -428,12 +428,7 @@ exports.updateProduct = async (req, res) => {
         }
       }
 
-      // If we already have images from file uploads, add the blob URLs
-      if (productData.images) {
-        productData.images = [...productData.images, ...blobImages];
-      } else {
-        productData.images = blobImages;
-      }
+      console.log('Parsed blob images:', blobImages);
     }
 
     // Handle uploaded images
@@ -458,17 +453,34 @@ exports.updateProduct = async (req, res) => {
           });
 
           // Wait for all uploads to complete
-          productData.images = await Promise.all(uploadPromises);
+          const uploadedImages = await Promise.all(uploadPromises);
+
+          // Combine with blob images if any
+          if (blobImages.length > 0) {
+            productData.images = [...blobImages, ...uploadedImages];
+          } else {
+            productData.images = uploadedImages;
+          }
         } else {
           // Legacy path for disk storage
-          productData.images = req.files.map(file => `/uploads/${file.filename}`);
+          const fileImages = req.files.map(file => `/uploads/${file.filename}`);
+          if (blobImages.length > 0) {
+            productData.images = [...blobImages, ...fileImages];
+          } else {
+            productData.images = fileImages;
+          }
         }
       } catch (uploadError) {
         console.error('Error uploading images:', uploadError);
         // Keep existing images if upload fails
-        productData.images = product.images;
+        productData.images = blobImages.length > 0 ? blobImages : product.images;
       }
-    } else if (product.images) {
+    } else if (blobImages.length > 0) {
+      // If no file uploads but we have blob images, use them
+      console.log('No file uploads, using blob images:', blobImages);
+      productData.images = blobImages;
+    } else {
+      // Keep existing images
       productData.images = product.images;
     }
 
