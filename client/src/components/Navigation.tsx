@@ -23,6 +23,10 @@ import HomeIcon from '@mui/icons-material/Home';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
+import CollectionsIcon from '@mui/icons-material/Collections';
+import InfoIcon from '@mui/icons-material/Info';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import ContactMailIcon from '@mui/icons-material/ContactMail';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { useTranslation } from 'react-i18next';
@@ -34,14 +38,22 @@ const Navigation = () => {
   const { settings } = useSettings();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { t } = useTranslation();
-  
-  // Pages links configuration with translations
+
+  // Pages links configuration with translations and icons
   const pages = [
-    { name: t('navigation.home'), path: '/' },
-    { name: t('navigation.catalogue'), path: '/catalogue' },
-    { name: t('navigation.about'), path: '/about' },
-    { name: t('navigation.estimate'), path: '/estimate' },
-    { name: t('navigation.contact'), path: '/contact' },
+    { name: t('navigation.home'), path: '/', icon: <HomeIcon fontSize="small" /> },
+    {
+      name: t('navigation.catalogue'),
+      path: '/catalogue',
+      icon: <CollectionsIcon fontSize="small" />,
+    },
+    { name: t('navigation.about'), path: '/about', icon: <InfoIcon fontSize="small" /> },
+    {
+      name: t('navigation.estimate'),
+      path: '/estimate',
+      icon: <MonetizationOnIcon fontSize="small" />,
+    },
+    { name: t('navigation.contact'), path: '/contact', icon: <ContactMailIcon fontSize="small" /> },
   ];
 
   const handleOpenNavMenu = () => {
@@ -97,44 +109,37 @@ const Navigation = () => {
             >
               <MenuIcon />
             </IconButton>
-            
+
             {/* Mobile drawer */}
-            <Drawer
-              anchor="left"
-              open={drawerOpen}
-              onClose={handleCloseNavMenu}
-            >
-              <Box
-                sx={{ width: 250 }}
-                role="presentation"
-                onClick={handleCloseNavMenu}
-              >
+            <Drawer anchor="left" open={drawerOpen} onClose={handleCloseNavMenu}>
+              <Box sx={{ width: 250 }} role="presentation" onClick={handleCloseNavMenu}>
                 <List>
                   <ListItem>
                     <Typography
                       variant="h6"
-                      sx={{ 
+                      sx={{
                         fontFamily: 'Playfair Display',
                         fontWeight: 700,
-                        pb: 1
+                        pb: 1,
                       }}
                     >
                       {siteTitle}
                     </Typography>
                   </ListItem>
                   <Divider />
-                  {pages.map((page) => (
+                  {pages.map(page => (
                     <ListItem key={page.name} disablePadding>
                       <ListItemButton
                         component={RouterLink}
                         to={page.path}
                         selected={location.pathname === page.path}
                       >
-                        <ListItemText primary={page.name} />
+                        {page.icon}
+                        <ListItemText primary={page.name} sx={{ ml: 1 }} />
                       </ListItemButton>
                     </ListItem>
                   ))}
-                  
+
                   {/* Admin link for mobile */}
                   {isAuthenticated && isAdmin && (
                     <ListItem disablePadding>
@@ -148,7 +153,7 @@ const Navigation = () => {
                       </ListItemButton>
                     </ListItem>
                   )}
-                  
+
                   {/* Login/Logout for mobile */}
                   <ListItem disablePadding>
                     {isAuthenticated ? (
@@ -199,16 +204,20 @@ const Navigation = () => {
           </Typography>
 
           {/* Desktop navigation links */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: 'flex-end' }}>
-            {pages.map((page) => (
+          <Box
+            sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: 'flex-end' }}
+          >
+            {pages.map(page => (
               <Button
                 key={page.name}
                 component={RouterLink}
                 to={page.path}
-                sx={{ 
-                  my: 2, 
-                  color: 'white', 
-                  display: 'block',
+                startIcon={page.icon}
+                sx={{
+                  my: 2,
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
                   mx: 1,
                   fontWeight: location.pathname === page.path ? 'bold' : 'normal',
                   borderBottom: location.pathname === page.path ? '2px solid white' : 'none',
@@ -222,17 +231,18 @@ const Navigation = () => {
                 {page.name}
               </Button>
             ))}
-            
+
             {/* Admin link for desktop */}
             {isAuthenticated && isAdmin && (
               <Button
                 component={RouterLink}
                 to="/admin"
                 startIcon={<AdminPanelSettingsIcon />}
-                sx={{ 
-                  my: 2, 
-                  color: 'white', 
-                  display: 'block',
+                sx={{
+                  my: 2,
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
                   mx: 1,
                   fontWeight: location.pathname.startsWith('/admin') ? 'bold' : 'normal',
                   borderBottom: location.pathname.startsWith('/admin') ? '2px solid white' : 'none',
@@ -246,16 +256,17 @@ const Navigation = () => {
                 Admin
               </Button>
             )}
-            
+
             {/* Login/Logout for desktop */}
             {isAuthenticated ? (
               <Button
                 onClick={handleLogout}
                 startIcon={<LogoutIcon />}
-                sx={{ 
-                  my: 2, 
-                  color: 'white', 
-                  display: 'block',
+                sx={{
+                  my: 2,
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
                   mx: 1,
                   borderRadius: 0,
                   '&:hover': {
@@ -271,10 +282,11 @@ const Navigation = () => {
                 component={RouterLink}
                 to="/login"
                 startIcon={<LoginIcon />}
-                sx={{ 
-                  my: 2, 
-                  color: 'white', 
-                  display: 'block',
+                sx={{
+                  my: 2,
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
                   mx: 1,
                   fontWeight: location.pathname === '/login' ? 'bold' : 'normal',
                   borderBottom: location.pathname === '/login' ? '2px solid white' : 'none',
@@ -288,7 +300,7 @@ const Navigation = () => {
                 Login
               </Button>
             )}
-            
+
             {/* Desktop language switcher */}
             <LanguageSwitcher />
           </Box>
@@ -298,4 +310,4 @@ const Navigation = () => {
   );
 };
 
-export default Navigation; 
+export default Navigation;
