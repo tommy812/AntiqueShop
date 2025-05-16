@@ -39,7 +39,7 @@ import {
   AccordionDetails,
   Badge,
   Tooltip,
-  Avatar
+  Avatar,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -58,7 +58,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   MarkEmailRead as MarkEmailReadIcon,
   Reply as ReplyIcon,
-  Email as EmailIcon
+  Email as EmailIcon,
 } from '@mui/icons-material';
 import categoryService, { Category } from '../services/categoryService';
 import periodService, { Period } from '../services/periodService';
@@ -68,6 +68,7 @@ import productService, { Product } from '../services/productService';
 import messageService, { Message } from '../services/messageService';
 import { useSettings } from '../contexts/SettingsContext';
 import settingsService, { SiteSettings } from '../services/settingsService';
+import BlobImageManager from '../components/admin/BlobImageManager';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -86,11 +87,7 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
   );
 }
@@ -103,18 +100,44 @@ const dashboardStats = [
   { title: 'Messages', value: 24, icon: <MessageIcon fontSize="large" /> },
 ];
 
+// Near the top of the Admin component where the state is defined
+// Define the Product with blobImages property
+interface AdminProduct {
+  name: string;
+  description: string;
+  price: string;
+  category: string;
+  period: string;
+  images: File[];
+  blobImages: string[];
+  condition: string;
+  origin: string;
+  provenance: string;
+  measures: {
+    height: string;
+    width: string;
+    depth: string;
+    unit: string;
+  };
+  history: string;
+  delivery: string;
+  featured: boolean;
+}
+
 const Admin = () => {
   const muiTheme = useMuiTheme();
   const { colors, updateTheme } = useTheme();
   const { user } = useAuth();
   const [tabValue, setTabValue] = useState(0);
-  const [newProduct, setNewProduct] = useState({
+  // Update the newProduct state with the new type
+  const [newProduct, setNewProduct] = useState<AdminProduct>({
     name: '',
     description: '',
     price: '',
     category: '',
     period: '',
-    images: [] as File[],
+    images: [],
+    blobImages: [],
     condition: 'Good',
     origin: '',
     provenance: '',
@@ -122,11 +145,11 @@ const Admin = () => {
       height: '',
       width: '',
       depth: '',
-      unit: 'cm'
+      unit: 'cm',
     },
     history: '',
     delivery: '',
-    featured: false
+    featured: false,
   });
   const [newCategory, setNewCategory] = useState({
     name: '',
@@ -151,7 +174,11 @@ const Admin = () => {
   const [primaryColor, setPrimaryColor] = useState(colors.primary);
   const [secondaryColor, setSecondaryColor] = useState(colors.secondary);
   const [loading, setLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error',
+  });
   const [editProduct, setEditProduct] = useState<null | {
     _id: string;
     name: string;
@@ -182,23 +209,25 @@ const Admin = () => {
   ]);
 
   // State for recent activity
-  const [recentActivity, setRecentActivity] = useState<Array<{
-    type: string;
-    title: string;
-    description: string;
-    date: Date;
-  }>>([]);
+  const [recentActivity, setRecentActivity] = useState<
+    Array<{
+      type: string;
+      title: string;
+      description: string;
+      date: Date;
+    }>
+  >([]);
 
   const { settings, updateSettings, resetSettings, refreshSettings } = useSettings();
-  
+
   // Helper function to convert any footer object to the expected type
   const getFooterObject = (footerObj: any): { copyright: string; shortDescription: string } => {
     return {
       copyright: footerObj?.copyright || '',
-      shortDescription: footerObj?.shortDescription || ''
+      shortDescription: footerObj?.shortDescription || '',
     };
   };
-  
+
   // Settings form state
   const [siteSettings, setSiteSettings] = useState<{
     title: string;
@@ -231,28 +260,28 @@ const Admin = () => {
       street: '',
       city: '',
       postalCode: '',
-      country: ''
+      country: '',
     },
     contact: {
       phone: '',
-      email: ''
+      email: '',
     },
     hours: [
       { days: '', hours: '' },
       { days: '', hours: '' },
-      { days: '', hours: '' }
+      { days: '', hours: '' },
     ],
     social: {
       instagram: '',
       facebook: '',
-      twitter: ''
+      twitter: '',
     },
     footer: {
       copyright: '',
-      shortDescription: ''
-    }
+      shortDescription: '',
+    },
   });
-  
+
   // Initialize settings form when settings are loaded
   useEffect(() => {
     if (settings) {
@@ -263,60 +292,69 @@ const Admin = () => {
           street: settings.address?.street || '',
           city: settings.address?.city || '',
           postalCode: settings.address?.postalCode || '',
-          country: settings.address?.country || ''
+          country: settings.address?.country || '',
         },
         contact: {
           phone: settings.contact?.phone || '',
-          email: settings.contact?.email || ''
+          email: settings.contact?.email || '',
         },
-        hours: settings.hours?.length ? [...settings.hours] : [
-          { days: '', hours: '' },
-          { days: '', hours: '' },
-          { days: '', hours: '' }
-        ],
+        hours: settings.hours?.length
+          ? [...settings.hours]
+          : [
+              { days: '', hours: '' },
+              { days: '', hours: '' },
+              { days: '', hours: '' },
+            ],
         social: {
           instagram: settings.social?.instagram || '',
           facebook: settings.social?.facebook || '',
-          twitter: settings.social?.twitter || ''
+          twitter: settings.social?.twitter || '',
         },
         footer: {
           copyright: settings.footer?.copyright || '',
-          shortDescription: settings.footer?.shortDescription || ''
-        }
+          shortDescription: settings.footer?.shortDescription || '',
+        },
       };
-      
+
       setSiteSettings(settingsValue);
     }
   }, [settings]);
-  
+
   // Handle settings input changes
-  const handleSettingsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, section?: string, field?: string) => {
+  const handleSettingsChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    section?: string,
+    field?: string
+  ) => {
     const { name, value } = e.target;
-    
+
     if (section && field) {
       // For nested fields like address.street
       setSiteSettings(prev => {
-        if (!prev[section as keyof typeof prev] || typeof prev[section as keyof typeof prev] !== 'object') {
+        if (
+          !prev[section as keyof typeof prev] ||
+          typeof prev[section as keyof typeof prev] !== 'object'
+        ) {
           return prev; // Return unchanged if section doesn't exist or isn't an object
         }
-        
+
         return {
           ...prev,
           [section]: {
-            ...prev[section as keyof typeof prev] as Record<string, unknown>,
-            [field]: value
-          }
+            ...(prev[section as keyof typeof prev] as Record<string, unknown>),
+            [field]: value,
+          },
         };
       });
     } else {
       // For top-level fields like title
       setSiteSettings(prev => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
   };
-  
+
   // Handle changes to hours (array of objects)
   const handleHoursChange = (index: number, field: 'days' | 'hours', value: string) => {
     setSiteSettings(prev => {
@@ -325,7 +363,7 @@ const Admin = () => {
       return { ...prev, hours: newHours };
     });
   };
-  
+
   // Save settings
   const handleSaveSettings = async () => {
     try {
@@ -334,20 +372,20 @@ const Admin = () => {
       setSnackbar({
         open: true,
         message: 'Settings updated successfully',
-        severity: 'success'
+        severity: 'success',
       });
     } catch (error) {
       console.error('Error updating settings:', error);
       setSnackbar({
         open: true,
         message: 'Failed to update settings',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       setLoading(false);
     }
   };
-  
+
   // Reset settings to default
   const handleResetSettings = async () => {
     try {
@@ -357,14 +395,14 @@ const Admin = () => {
       setSnackbar({
         open: true,
         message: 'Settings reset to default values',
-        severity: 'success'
+        severity: 'success',
       });
     } catch (error) {
       console.error('Error resetting settings:', error);
       setSnackbar({
         open: true,
         message: 'Failed to reset settings',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -389,7 +427,7 @@ const Admin = () => {
         setSnackbar({
           open: true,
           message: 'Failed to fetch categories',
-          severity: 'error'
+          severity: 'error',
         });
       } finally {
         setLoading(false);
@@ -412,7 +450,7 @@ const Admin = () => {
         setSnackbar({
           open: true,
           message: 'Failed to fetch periods',
-          severity: 'error'
+          severity: 'error',
         });
       } finally {
         setLoading(false);
@@ -435,7 +473,7 @@ const Admin = () => {
         setSnackbar({
           open: true,
           message: 'Failed to fetch products',
-          severity: 'error'
+          severity: 'error',
         });
       } finally {
         setLoading(false);
@@ -458,7 +496,7 @@ const Admin = () => {
         setSnackbar({
           open: true,
           message: 'Failed to fetch messages',
-          severity: 'error'
+          severity: 'error',
         });
       } finally {
         setLoading(false);
@@ -469,7 +507,7 @@ const Admin = () => {
     fetchPeriods();
     fetchProducts();
     fetchMessages();
-    
+
     // Fetch settings from context
     refreshSettings();
     setSiteSettings({
@@ -478,95 +516,96 @@ const Admin = () => {
         street: settings.address?.street || '',
         city: settings.address?.city || '',
         postalCode: settings.address?.postalCode || '',
-        country: settings.address?.country || ''
+        country: settings.address?.country || '',
       },
       contact: {
         phone: settings.contact?.phone || '',
-        email: settings.contact?.email || ''
+        email: settings.contact?.email || '',
       },
       hours: settings.hours || [
         { days: '', hours: '' },
         { days: '', hours: '' },
-        { days: '', hours: '' }
+        { days: '', hours: '' },
       ],
       social: {
         facebook: settings.social?.facebook || '',
         instagram: settings.social?.instagram || '',
-        twitter: settings.social?.twitter || ''
+        twitter: settings.social?.twitter || '',
       },
       footer: settings.footer || {
         copyright: '',
-        shortDescription: ''
-      }
+        shortDescription: '',
+      },
     });
   }, []);
 
   // Update recent activity when data changes
   useEffect(() => {
     const activity = [];
-    
+
     // Add recent products (up to 3)
-    const sortedProducts = [...products].sort((a, b) => 
-      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    const sortedProducts = [...products].sort(
+      (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
-    
+
     for (let i = 0; i < Math.min(sortedProducts.length, 3); i++) {
       const product = sortedProducts[i];
       activity.push({
         type: 'product',
         title: `New product added: ${product.name}`,
         description: `Added on ${new Date(product.createdAt || Date.now()).toLocaleDateString()}`,
-        date: new Date(product.createdAt || Date.now())
+        date: new Date(product.createdAt || Date.now()),
       });
     }
-    
+
     // Add recent categories (up to 2)
-    const sortedCategories = [...categories].sort((a, b) => 
-      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    const sortedCategories = [...categories].sort(
+      (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
-    
+
     for (let i = 0; i < Math.min(sortedCategories.length, 2); i++) {
       const category = sortedCategories[i];
       activity.push({
         type: 'category',
         title: `New category added: ${category.name}`,
         description: `Added on ${new Date(category.createdAt || Date.now()).toLocaleDateString()}`,
-        date: new Date(category.createdAt || Date.now())
+        date: new Date(category.createdAt || Date.now()),
       });
     }
-    
+
     // Add recent periods (up to 2)
-    const sortedPeriods = [...periods].sort((a, b) => 
-      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    const sortedPeriods = [...periods].sort(
+      (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
-    
+
     for (let i = 0; i < Math.min(sortedPeriods.length, 2); i++) {
       const period = sortedPeriods[i];
       activity.push({
         type: 'period',
         title: `New period added: ${period.name}`,
         description: `Added on ${new Date(period.createdAt || Date.now()).toLocaleDateString()}`,
-        date: new Date(period.createdAt || Date.now())
+        date: new Date(period.createdAt || Date.now()),
       });
     }
-    
+
     // Sort all activity by date
     activity.sort((a, b) => b.date.getTime() - a.date.getTime());
-    
+
     // Take only the 5 most recent activities
     setRecentActivity(activity.slice(0, 5));
-    
   }, [products, categories, periods]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
-  const handleProductChange = (e: React.ChangeEvent<HTMLInputElement> | { target: { name?: string; value: unknown } }) => {
+  const handleProductChange = (
+    e: React.ChangeEvent<HTMLInputElement> | { target: { name?: string; value: unknown } }
+  ) => {
     const { name, value } = e.target;
-    
+
     if (!name) return;
-    
+
     // Handle nested measures object
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
@@ -575,14 +614,14 @@ const Admin = () => {
           ...prev,
           measures: {
             ...prev.measures,
-            [child]: value
-          }
+            [child]: value,
+          },
         }));
       }
     } else {
       setNewProduct(prev => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
   };
@@ -591,46 +630,53 @@ const Admin = () => {
     if (e.target.files) {
       setNewProduct({
         ...newProduct,
-        images: [...Array.from(e.target.files)]
+        images: [...Array.from(e.target.files)],
       });
     }
+  };
+
+  const handleBlobImagesChange = (images: string[]) => {
+    setNewProduct(prev => ({
+      ...prev,
+      blobImages: images, // Store blob URLs separately
+    }));
   };
 
   const handleAddProduct = async () => {
     try {
       setLoading(true);
-      
+
       // Create FormData object for file uploads
       const formData = new FormData();
-      
+
       // Debug the values being sent
       console.log('Sending product data:', {
         name: newProduct.name,
         description: newProduct.description,
         price: newProduct.price,
         category: newProduct.category,
-        period: newProduct.period
+        period: newProduct.period,
       });
-      
+
       // Make sure we have required fields
       if (!newProduct.name || !newProduct.description || !newProduct.price) {
         setSnackbar({
           open: true,
           message: 'Please fill in all required fields: name, description, and price',
-          severity: 'error'
+          severity: 'error',
         });
         setLoading(false);
         return;
       }
-      
+
       formData.append('name', newProduct.name);
       formData.append('description', newProduct.description);
       formData.append('price', newProduct.price);
-      
+
       // Log the category ID for debugging
       console.log('Category ID being sent:', newProduct.category);
       console.log('Available categories:', categories);
-      
+
       formData.append('category', newProduct.category);
       formData.append('period', newProduct.period);
       formData.append('condition', newProduct.condition);
@@ -643,21 +689,30 @@ const Admin = () => {
       formData.append('history', newProduct.history || '');
       formData.append('delivery', newProduct.delivery || '');
       formData.append('featured', String(newProduct.featured));
-      
-      // Append all images
-      newProduct.images.forEach((image, index) => {
-        formData.append('images', image);
-      });
-      
+
+      // If we have Blob image URLs, include them directly
+      if (newProduct.blobImages && newProduct.blobImages.length > 0) {
+        newProduct.blobImages.forEach((imageUrl, index) => {
+          formData.append(`blobImages[${index}]`, imageUrl);
+        });
+      }
+
+      // Append file images (if any)
+      if (newProduct.images && newProduct.images.length > 0) {
+        newProduct.images.forEach((image, index) => {
+          formData.append('images', image);
+        });
+      }
+
       // Log the FormData contents for debugging
       // Using Array.from to convert the iterator to an array for TypeScript compatibility
       Array.from(formData.entries()).forEach(pair => {
         console.log(pair[0] + ': ' + pair[1]);
       });
-      
+
       const result = await productService.createProduct(formData);
       setProducts([...products, result]);
-      
+
       // Reset form
       setNewProduct({
         name: '',
@@ -666,6 +721,7 @@ const Admin = () => {
         category: '',
         period: '',
         images: [],
+        blobImages: [],
         condition: 'Good',
         origin: '',
         provenance: '',
@@ -673,17 +729,17 @@ const Admin = () => {
           height: '',
           width: '',
           depth: '',
-          unit: 'cm'
+          unit: 'cm',
         },
         history: '',
         delivery: '',
-        featured: false
+        featured: false,
       });
-      
+
       setSnackbar({
         open: true,
         message: 'Product added successfully',
-        severity: 'success'
+        severity: 'success',
       });
     } catch (error) {
       console.error('Error adding product:', error);
@@ -691,18 +747,18 @@ const Admin = () => {
       if (error.response) {
         console.error('Error response:', error.response.data);
         console.error('Error status:', error.response.status);
-        
+
         // Show more specific error message
         setSnackbar({
           open: true,
           message: `Failed to add product: ${error.response.data.message || error.message}`,
-          severity: 'error'
+          severity: 'error',
         });
       } else {
         setSnackbar({
           open: true,
           message: 'Failed to add product',
-          severity: 'error'
+          severity: 'error',
         });
       }
     } finally {
@@ -718,9 +774,9 @@ const Admin = () => {
           name: newCategory.name,
           description: newCategory.description,
           featured: false,
-          image: newCategory.image
+          image: newCategory.image,
         };
-        
+
         const result = await categoryService.createCategory(newCategoryData);
         setCategories([...categories, result]);
         setNewCategory({
@@ -732,14 +788,14 @@ const Admin = () => {
         setSnackbar({
           open: true,
           message: 'Category added successfully',
-          severity: 'success'
+          severity: 'success',
         });
       } catch (error) {
         console.error('Error adding category:', error);
         setSnackbar({
           open: true,
           message: 'Failed to add category',
-          severity: 'error'
+          severity: 'error',
         });
       } finally {
         setLoading(false);
@@ -751,7 +807,7 @@ const Admin = () => {
     const { name, value } = e.target;
     setNewCategory(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -759,7 +815,7 @@ const Admin = () => {
     const { name, value } = e.target;
     setNewPeriod(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -772,9 +828,9 @@ const Admin = () => {
           description: newPeriod.description,
           yearStart: newPeriod.yearStart ? parseInt(newPeriod.yearStart) : undefined,
           yearEnd: newPeriod.yearEnd ? parseInt(newPeriod.yearEnd) : undefined,
-          featured: false
+          featured: false,
         };
-        
+
         const result = await periodService.createPeriod(periodData);
         setPeriods([...periods, result]);
         setNewPeriod({
@@ -787,14 +843,14 @@ const Admin = () => {
         setSnackbar({
           open: true,
           message: 'Period added successfully',
-          severity: 'success'
+          severity: 'success',
         });
       } catch (error) {
         console.error('Error adding period:', error);
         setSnackbar({
           open: true,
           message: 'Failed to add period',
-          severity: 'error'
+          severity: 'error',
         });
       } finally {
         setLoading(false);
@@ -810,14 +866,14 @@ const Admin = () => {
       setSnackbar({
         open: true,
         message: 'Category deleted successfully',
-        severity: 'success'
+        severity: 'success',
       });
     } catch (error) {
       console.error('Error deleting category:', error);
       setSnackbar({
         open: true,
         message: 'Failed to delete category',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -832,14 +888,14 @@ const Admin = () => {
       setSnackbar({
         open: true,
         message: 'Period deleted successfully',
-        severity: 'success'
+        severity: 'success',
       });
     } catch (error) {
       console.error('Error deleting period:', error);
       setSnackbar({
         open: true,
         message: 'Failed to delete period',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -854,21 +910,24 @@ const Admin = () => {
       setSnackbar({
         open: true,
         message: 'Product deleted successfully',
-        severity: 'success'
+        severity: 'success',
       });
     } catch (error) {
       console.error('Error deleting product:', error);
       setSnackbar({
         open: true,
         message: 'Failed to delete product',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, type: 'primary' | 'secondary') => {
+  const handleColorChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    type: 'primary' | 'secondary'
+  ) => {
     const color = e.target.value;
     if (type === 'primary') {
       setPrimaryColor(color);
@@ -882,7 +941,7 @@ const Admin = () => {
     setSnackbar({
       open: true,
       message: 'Theme updated successfully',
-      severity: 'success'
+      severity: 'success',
     });
   };
 
@@ -890,25 +949,25 @@ const Admin = () => {
     try {
       setLoading(true);
       await categoryService.toggleFeatured(id);
-      
+
       // Update the local state
-      setCategories(categories.map(category => 
-        category._id === id 
-          ? { ...category, featured: !currentStatus } 
-          : category
-      ));
-      
+      setCategories(
+        categories.map(category =>
+          category._id === id ? { ...category, featured: !currentStatus } : category
+        )
+      );
+
       setSnackbar({
         open: true,
         message: `Category ${!currentStatus ? 'marked as featured' : 'removed from featured'}`,
-        severity: 'success'
+        severity: 'success',
       });
     } catch (error) {
       console.error('Error toggling featured status:', error);
       setSnackbar({
         open: true,
         message: 'Failed to update featured status',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -919,25 +978,25 @@ const Admin = () => {
     try {
       setLoading(true);
       await periodService.toggleFeatured(id);
-      
+
       // Update the local state
-      setPeriods(periods.map(period => 
-        period._id === id 
-          ? { ...period, featured: !currentStatus } 
-          : period
-      ));
-      
+      setPeriods(
+        periods.map(period =>
+          period._id === id ? { ...period, featured: !currentStatus } : period
+        )
+      );
+
       setSnackbar({
         open: true,
         message: `Period ${!currentStatus ? 'marked as featured' : 'removed from featured'}`,
-        severity: 'success'
+        severity: 'success',
       });
     } catch (error) {
       console.error('Error toggling featured status:', error);
       setSnackbar({
         open: true,
         message: 'Failed to update featured status',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -985,22 +1044,24 @@ const Admin = () => {
         height: product.measures?.height?.toString() || '',
         width: product.measures?.width?.toString() || '',
         depth: product.measures?.depth?.toString() || '',
-        unit: product.measures?.unit || 'cm'
+        unit: product.measures?.unit || 'cm',
       },
       history: product.history || '',
       delivery: product.delivery || '',
-      featured: product.featured || false
+      featured: product.featured || false,
     });
     setOpenDialog('edit-product');
   };
 
-  const handleEditProductChange = (e: React.ChangeEvent<HTMLInputElement> | { target: { name?: string; value: unknown } }) => {
+  const handleEditProductChange = (
+    e: React.ChangeEvent<HTMLInputElement> | { target: { name?: string; value: unknown } }
+  ) => {
     if (!editProduct) return;
-    
+
     const { name, value } = e.target;
-    
+
     if (!name) return;
-    
+
     // Handle nested measures object
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
@@ -1009,24 +1070,24 @@ const Admin = () => {
           ...editProduct,
           measures: {
             ...editProduct.measures,
-            [child]: value
-          }
+            [child]: value,
+          },
         });
       }
     } else {
       setEditProduct({
         ...editProduct,
-        [name]: value
+        [name]: value,
       });
     }
   };
 
   const handleSaveProduct = async () => {
     if (!editProduct) return;
-    
+
     try {
       setLoading(true);
-      
+
       // Create FormData object for file uploads
       const formData = new FormData();
       formData.append('name', editProduct.name);
@@ -1044,26 +1105,26 @@ const Admin = () => {
       formData.append('history', editProduct.history);
       formData.append('delivery', editProduct.delivery);
       formData.append('featured', String(editProduct.featured));
-      
+
       const result = await productService.updateProduct(editProduct._id, formData);
-      
+
       // Update products list with edited product
-      setProducts(products.map(p => p._id === editProduct._id ? result : p));
-      
+      setProducts(products.map(p => (p._id === editProduct._id ? result : p)));
+
       setOpenDialog(null);
       setEditProduct(null);
-      
+
       setSnackbar({
         open: true,
         message: 'Product updated successfully',
-        severity: 'success'
+        severity: 'success',
       });
     } catch (error) {
       console.error('Error updating product:', error);
       setSnackbar({
         open: true,
         message: 'Failed to update product',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -1100,43 +1161,43 @@ const Admin = () => {
   // Handle edit category changes
   const handleEditCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editCategory) return;
-    
+
     const { name, value } = e.target;
     setEditCategory({
       ...editCategory,
-      [name]: value
+      [name]: value,
     });
   };
 
   // Save edited category
   const handleSaveCategory = async () => {
     if (!editCategory) return;
-    
+
     try {
       setLoading(true);
       const updatedCategory = await categoryService.updateCategory(editCategory._id, {
         name: editCategory.name,
         description: editCategory.description,
-        image: editCategory.image
+        image: editCategory.image,
       });
-      
+
       // Update categories list with edited category
-      setCategories(categories.map(c => c._id === editCategory._id ? updatedCategory : c));
-      
+      setCategories(categories.map(c => (c._id === editCategory._id ? updatedCategory : c)));
+
       setOpenDialog(null);
       setEditCategory(null);
-      
+
       setSnackbar({
         open: true,
         message: 'Category updated successfully',
-        severity: 'success'
+        severity: 'success',
       });
     } catch (error) {
       console.error('Error updating category:', error);
       setSnackbar({
         open: true,
         message: 'Failed to update category',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -1158,44 +1219,44 @@ const Admin = () => {
   // Handle edit period changes
   const handleEditPeriodChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editPeriod) return;
-    
+
     const { name, value } = e.target;
     setEditPeriod({
       ...editPeriod,
-      [name]: value
+      [name]: value,
     });
   };
 
   // Save edited period
   const handleSavePeriod = async () => {
     if (!editPeriod) return;
-    
+
     try {
       setLoading(true);
       const updatedPeriod = await periodService.updatePeriod(editPeriod._id, {
         name: editPeriod.name,
         description: editPeriod.description,
         yearStart: editPeriod.yearStart ? parseInt(editPeriod.yearStart) : undefined,
-        yearEnd: editPeriod.yearEnd ? parseInt(editPeriod.yearEnd) : undefined
+        yearEnd: editPeriod.yearEnd ? parseInt(editPeriod.yearEnd) : undefined,
       });
-      
+
       // Update periods list with edited period
-      setPeriods(periods.map(p => p._id === editPeriod._id ? updatedPeriod : p));
-      
+      setPeriods(periods.map(p => (p._id === editPeriod._id ? updatedPeriod : p)));
+
       setOpenDialog(null);
       setEditPeriod(null);
-      
+
       setSnackbar({
         open: true,
         message: 'Period updated successfully',
-        severity: 'success'
+        severity: 'success',
       });
     } catch (error) {
       console.error('Error updating period:', error);
       setSnackbar({
         open: true,
         message: 'Failed to update period',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -1207,11 +1268,11 @@ const Admin = () => {
       <Typography variant="h4" gutterBottom>
         Admin Dashboard
       </Typography>
-      
+
       <Paper sx={{ width: '100%', mt: 2 }}>
-        <Tabs 
-          value={tabValue} 
-          onChange={handleTabChange} 
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
           variant="scrollable"
           scrollButtons="auto"
           sx={{ borderBottom: 1, borderColor: 'divider' }}
@@ -1224,14 +1285,14 @@ const Admin = () => {
           <Tab icon={<PaletteIcon />} label="Theme" />
           <Tab icon={<SettingsIcon />} label="Settings" />
         </Tabs>
-        
+
         {/* Dashboard Tab Panel */}
         <TabPanel value={tabValue} index={0}>
           <Box>
             <Typography variant="h5" gutterBottom>
               Dashboard Overview
             </Typography>
-            
+
             {/* Stats Cards */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
               {dashboardStats.map((stat, index) => (
@@ -1247,9 +1308,7 @@ const Admin = () => {
                       boxShadow: 2,
                     }}
                   >
-                    <Box sx={{ color: 'primary.main', mb: 1 }}>
-                      {stat.icon}
-                    </Box>
+                    <Box sx={{ color: 'primary.main', mb: 1 }}>{stat.icon}</Box>
                     <Typography variant="h4" component="div">
                       {stat.value}
                     </Typography>
@@ -1260,7 +1319,7 @@ const Admin = () => {
                 </Grid>
               ))}
             </Grid>
-            
+
             {/* Recent Activity */}
             <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 2 }}>
               <Typography variant="h6" gutterBottom>
@@ -1270,10 +1329,7 @@ const Admin = () => {
                 <List>
                   {recentActivity.map((activity, index) => (
                     <ListItem key={index} divider={index < recentActivity.length - 1}>
-                      <ListItemText
-                        primary={activity.title}
-                        secondary={activity.description}
-                      />
+                      <ListItemText primary={activity.title} secondary={activity.description} />
                     </ListItem>
                   ))}
                 </List>
@@ -1283,14 +1339,12 @@ const Admin = () => {
             </Paper>
           </Box>
         </TabPanel>
-        
+
         {/* Products Tab Panel */}
         <TabPanel value={tabValue} index={1}>
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-              <Typography variant="h5">
-                Products Management
-              </Typography>
+              <Typography variant="h5">Products Management</Typography>
               <Button
                 variant="contained"
                 color="primary"
@@ -1300,7 +1354,7 @@ const Admin = () => {
                 Add Product
               </Button>
             </Box>
-            
+
             <Grid container spacing={3}>
               {products.map(product => (
                 <Grid item xs={12} sm={6} md={4} key={product._id}>
@@ -1315,27 +1369,22 @@ const Admin = () => {
                       <Typography variant="body2" color="text.secondary" noWrap>
                         {product.description.substring(0, 100)}...
                       </Typography>
-                      
+
                       {product.featured && (
-                        <Chip 
-                          label="Featured" 
-                          color="primary" 
-                          size="small" 
-                          sx={{ mt: 1 }} 
-                        />
+                        <Chip label="Featured" color="primary" size="small" sx={{ mt: 1 }} />
                       )}
                     </CardContent>
                     <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between' }}>
-                      <Button 
-                        size="small" 
+                      <Button
+                        size="small"
                         startIcon={<EditIcon />}
                         onClick={() => handleOpenEditDialog(product)}
                       >
                         Edit
                       </Button>
-                      <Button 
-                        size="small" 
-                        color="error" 
+                      <Button
+                        size="small"
+                        color="error"
                         startIcon={<DeleteIcon />}
                         onClick={() => handleDeleteProduct(product._id!)}
                       >
@@ -1346,7 +1395,7 @@ const Admin = () => {
                 </Grid>
               ))}
             </Grid>
-            
+
             {products.length === 0 && (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <Typography variant="body1" color="text.secondary">
@@ -1356,14 +1405,12 @@ const Admin = () => {
             )}
           </Box>
         </TabPanel>
-        
+
         {/* Categories Tab Panel */}
         <TabPanel value={tabValue} index={2}>
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-              <Typography variant="h5">
-                Categories Management
-              </Typography>
+              <Typography variant="h5">Categories Management</Typography>
               <Button
                 variant="contained"
                 color="primary"
@@ -1373,31 +1420,31 @@ const Admin = () => {
                 Add Category
               </Button>
             </Box>
-            
+
             <List>
               {categories.map(category => (
                 <Paper key={category._id} sx={{ mb: 2, p: 0, borderRadius: 1 }}>
                   <ListItem
                     secondaryAction={
                       <Box>
-                        <IconButton 
-                          edge="end" 
+                        <IconButton
+                          edge="end"
                           aria-label="edit"
                           onClick={() => handleOpenEditCategoryDialog(category)}
                           sx={{ mr: 1 }}
                         >
                           <EditIcon />
                         </IconButton>
-                        <IconButton 
-                          edge="end" 
+                        <IconButton
+                          edge="end"
                           aria-label="toggle featured"
                           onClick={() => handleToggleFeatured(category._id!, category.featured)}
                           sx={{ mr: 1 }}
                         >
                           {category.featured ? <StarIcon color="primary" /> : <StarBorderIcon />}
                         </IconButton>
-                        <IconButton 
-                          edge="end" 
+                        <IconButton
+                          edge="end"
                           aria-label="delete"
                           onClick={() => handleDeleteCategory(category._id!)}
                         >
@@ -1406,15 +1453,12 @@ const Admin = () => {
                       </Box>
                     }
                   >
-                    <ListItemText
-                      primary={category.name}
-                      secondary={category.description}
-                    />
+                    <ListItemText primary={category.name} secondary={category.description} />
                   </ListItem>
                 </Paper>
               ))}
             </List>
-            
+
             {categories.length === 0 && (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <Typography variant="body1" color="text.secondary">
@@ -1424,14 +1468,12 @@ const Admin = () => {
             )}
           </Box>
         </TabPanel>
-        
+
         {/* Periods Tab Panel */}
         <TabPanel value={tabValue} index={3}>
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-              <Typography variant="h5">
-                Periods Management
-              </Typography>
+              <Typography variant="h5">Periods Management</Typography>
               <Button
                 variant="contained"
                 color="primary"
@@ -1441,31 +1483,31 @@ const Admin = () => {
                 Add Period
               </Button>
             </Box>
-            
+
             <List>
               {periods.map(period => (
                 <Paper key={period._id} sx={{ mb: 2, p: 0, borderRadius: 1 }}>
                   <ListItem
                     secondaryAction={
                       <Box>
-                        <IconButton 
-                          edge="end" 
+                        <IconButton
+                          edge="end"
                           aria-label="edit"
                           onClick={() => handleOpenEditPeriodDialog(period)}
                           sx={{ mr: 1 }}
                         >
                           <EditIcon />
                         </IconButton>
-                        <IconButton 
-                          edge="end" 
+                        <IconButton
+                          edge="end"
                           aria-label="toggle featured"
                           onClick={() => handleToggleFeaturedPeriod(period._id!, period.featured)}
                           sx={{ mr: 1 }}
                         >
                           {period.featured ? <StarIcon color="primary" /> : <StarBorderIcon />}
                         </IconButton>
-                        <IconButton 
-                          edge="end" 
+                        <IconButton
+                          edge="end"
                           aria-label="delete"
                           onClick={() => handleDeletePeriod(period._id!)}
                         >
@@ -1482,7 +1524,7 @@ const Admin = () => {
                 </Paper>
               ))}
             </List>
-            
+
             {periods.length === 0 && (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <Typography variant="body1" color="text.secondary">
@@ -1492,47 +1534,49 @@ const Admin = () => {
             )}
           </Box>
         </TabPanel>
-        
+
         {/* Messages Tab Panel */}
         <TabPanel value={tabValue} index={4}>
           <Box>
             <Typography variant="h5" gutterBottom>
               Messages & Inquiries
             </Typography>
-            
+
             <Grid container spacing={3}>
               <Grid item xs={12} md={4}>
                 <Paper sx={{ p: 2, height: '70vh', overflow: 'auto' }}>
                   <Typography variant="h6" gutterBottom>
                     All Messages
                   </Typography>
-                  
+
                   <List>
                     {messages.length > 0 ? (
-                      messages.map((message) => (
+                      messages.map(message => (
                         <ListItem
                           key={message._id}
                           onClick={() => setSelectedMessage(message)}
-                          className={selectedMessage?._id === message._id ? "Mui-selected" : ""}
+                          className={selectedMessage?._id === message._id ? 'Mui-selected' : ''}
                           sx={{
                             mb: 1,
                             borderRadius: 1,
-                            bgcolor: message.isRead ? 'transparent' : alpha(muiTheme.palette.primary.main, 0.1),
+                            bgcolor: message.isRead
+                              ? 'transparent'
+                              : alpha(muiTheme.palette.primary.main, 0.1),
                             '&.Mui-selected': {
                               bgcolor: alpha(muiTheme.palette.primary.main, 0.2),
                             },
-                            cursor: 'pointer'
+                            cursor: 'pointer',
                           }}
                         >
                           <ListItemText
                             primary={
                               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Typography 
-                                  variant="body1" 
-                                  component="span" 
-                                  sx={{ 
+                                <Typography
+                                  variant="body1"
+                                  component="span"
+                                  sx={{
                                     fontWeight: message.isRead ? 'normal' : 'bold',
-                                    mr: 1
+                                    mr: 1,
                                   }}
                                 >
                                   {message.name}
@@ -1543,25 +1587,27 @@ const Admin = () => {
                               </Box>
                             }
                             secondary={
-                              <Typography 
-                                variant="body2" 
-                                color="text.secondary" 
-                                sx={{ 
-                                  overflow: 'hidden', 
-                                  textOverflow: 'ellipsis', 
-                                  whiteSpace: 'nowrap'
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
                                 }}
                               >
                                 {message.subject}
                               </Typography>
                             }
                           />
-                          <Typography 
-                            variant="caption" 
-                            color="text.secondary" 
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
                             sx={{ ml: 2, minWidth: '80px', textAlign: 'right' }}
                           >
-                            {message.createdAt ? new Date(message.createdAt).toLocaleDateString() : ''}
+                            {message.createdAt
+                              ? new Date(message.createdAt).toLocaleDateString()
+                              : ''}
                           </Typography>
                         </ListItem>
                       ))
@@ -1573,38 +1619,46 @@ const Admin = () => {
                   </List>
                 </Paper>
               </Grid>
-              
+
               <Grid item xs={12} md={8}>
                 {selectedMessage ? (
                   <Paper sx={{ p: 3, height: '70vh', display: 'flex', flexDirection: 'column' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h6">
-                        {selectedMessage.subject}
-                      </Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        mb: 2,
+                      }}
+                    >
+                      <Typography variant="h6">{selectedMessage.subject}</Typography>
                       <Box>
                         <Tooltip title="Mark as read">
-                          <IconButton 
+                          <IconButton
                             color="primary"
                             onClick={() => {
                               if (selectedMessage._id) {
-                                messageService.toggleReadStatus(selectedMessage._id)
+                                messageService
+                                  .toggleReadStatus(selectedMessage._id)
                                   .then(() => {
                                     // Update the message in the messages array
-                                    setMessages(prevMessages => 
-                                      prevMessages.map(msg => 
-                                        msg._id === selectedMessage._id 
-                                          ? { ...msg, isRead: true } 
+                                    setMessages(prevMessages =>
+                                      prevMessages.map(msg =>
+                                        msg._id === selectedMessage._id
+                                          ? { ...msg, isRead: true }
                                           : msg
                                       )
                                     );
-                                    setSelectedMessage(prev => prev ? { ...prev, isRead: true } : prev);
+                                    setSelectedMessage(prev =>
+                                      prev ? { ...prev, isRead: true } : prev
+                                    );
                                   })
                                   .catch(err => {
                                     console.error('Error marking message as read:', err);
                                     setSnackbar({
                                       open: true,
                                       message: 'Failed to mark message as read',
-                                      severity: 'error'
+                                      severity: 'error',
                                     });
                                   });
                               }
@@ -1614,28 +1668,26 @@ const Admin = () => {
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Reply">
-                          <IconButton 
-                            color="primary"
-                            onClick={() => setReplyDialogOpen(true)}
-                          >
+                          <IconButton color="primary" onClick={() => setReplyDialogOpen(true)}>
                             <ReplyIcon />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Delete">
-                          <IconButton 
+                          <IconButton
                             color="error"
                             onClick={() => {
                               if (selectedMessage._id) {
-                                messageService.deleteMessage(selectedMessage._id)
+                                messageService
+                                  .deleteMessage(selectedMessage._id)
                                   .then(() => {
-                                    setMessages(prevMessages => 
+                                    setMessages(prevMessages =>
                                       prevMessages.filter(msg => msg._id !== selectedMessage._id)
                                     );
                                     setSelectedMessage(null);
                                     setSnackbar({
                                       open: true,
                                       message: 'Message deleted successfully',
-                                      severity: 'success'
+                                      severity: 'success',
                                     });
                                   })
                                   .catch(err => {
@@ -1643,7 +1695,7 @@ const Admin = () => {
                                     setSnackbar({
                                       open: true,
                                       message: 'Failed to delete message',
-                                      severity: 'error'
+                                      severity: 'error',
                                     });
                                   });
                               }
@@ -1654,23 +1706,35 @@ const Admin = () => {
                         </Tooltip>
                       </Box>
                     </Box>
-                    
+
                     <Box sx={{ mb: 3 }}>
                       <Typography variant="subtitle2" color="text.secondary">
                         From: {selectedMessage.name} ({selectedMessage.email})
                         {selectedMessage.phone && ` • ${selectedMessage.phone}`}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Received: {selectedMessage.createdAt ? new Date(selectedMessage.createdAt).toLocaleString() : ''}
+                        Received:{' '}
+                        {selectedMessage.createdAt
+                          ? new Date(selectedMessage.createdAt).toLocaleString()
+                          : ''}
                       </Typography>
                     </Box>
-                    
-                    <Box sx={{ flex: 1, overflow: 'auto', bgcolor: alpha(muiTheme.palette.background.paper, 0.5), p: 2, borderRadius: 1, mb: 2 }}>
+
+                    <Box
+                      sx={{
+                        flex: 1,
+                        overflow: 'auto',
+                        bgcolor: alpha(muiTheme.palette.background.paper, 0.5),
+                        p: 2,
+                        borderRadius: 1,
+                        mb: 2,
+                      }}
+                    >
                       <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                         {selectedMessage.message}
                       </Typography>
                     </Box>
-                    
+
                     <Button
                       variant="contained"
                       color="primary"
@@ -1681,7 +1745,15 @@ const Admin = () => {
                     </Button>
                   </Paper>
                 ) : (
-                  <Paper sx={{ p: 3, height: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Paper
+                    sx={{
+                      p: 3,
+                      height: '70vh',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <Box sx={{ textAlign: 'center' }}>
                       <EmailIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
                       <Typography variant="h6" color="text.secondary">
@@ -1695,17 +1767,15 @@ const Admin = () => {
                 )}
               </Grid>
             </Grid>
-            
+
             {/* Reply Dialog */}
-            <Dialog 
-              open={replyDialogOpen} 
+            <Dialog
+              open={replyDialogOpen}
               onClose={() => setReplyDialogOpen(false)}
               maxWidth="md"
               fullWidth
             >
-              <DialogTitle>
-                Reply to {selectedMessage?.name}
-              </DialogTitle>
+              <DialogTitle>Reply to {selectedMessage?.name}</DialogTitle>
               <DialogContent>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
                   Replying to message: {selectedMessage?.subject}
@@ -1716,44 +1786,45 @@ const Admin = () => {
                   multiline
                   rows={8}
                   value={messageReply}
-                  onChange={(e) => setMessageReply(e.target.value)}
+                  onChange={e => setMessageReply(e.target.value)}
                   margin="normal"
                   placeholder="Type your reply here..."
                 />
               </DialogContent>
               <DialogActions>
                 <Button onClick={() => setReplyDialogOpen(false)}>Cancel</Button>
-                <Button 
-                  variant="contained" 
+                <Button
+                  variant="contained"
                   color="primary"
                   disabled={!messageReply.trim() || loading}
                   onClick={() => {
                     if (selectedMessage && selectedMessage._id) {
                       setLoading(true);
-                      
-                      messageService.replyToMessage(selectedMessage._id, messageReply)
+
+                      messageService
+                        .replyToMessage(selectedMessage._id, messageReply)
                         .then(() => {
                           // Update message status in the list
-                          setMessages(prevMessages => 
-                            prevMessages.map(msg => 
-                              msg._id === selectedMessage._id 
-                                ? { ...msg, isRead: true, status: 'replied' } 
+                          setMessages(prevMessages =>
+                            prevMessages.map(msg =>
+                              msg._id === selectedMessage._id
+                                ? { ...msg, isRead: true, status: 'replied' }
                                 : msg
                             )
                           );
-                          
+
                           // Update selected message
-                          setSelectedMessage(prev => 
+                          setSelectedMessage(prev =>
                             prev ? { ...prev, isRead: true, status: 'replied' } : prev
                           );
-                          
+
                           setLoading(false);
                           setReplyDialogOpen(false);
                           setMessageReply('');
                           setSnackbar({
                             open: true,
                             message: 'Reply sent successfully',
-                            severity: 'success'
+                            severity: 'success',
                           });
                         })
                         .catch(err => {
@@ -1762,7 +1833,7 @@ const Admin = () => {
                           setSnackbar({
                             open: true,
                             message: 'Failed to send reply',
-                            severity: 'error'
+                            severity: 'error',
                           });
                         });
                     }
@@ -1774,7 +1845,7 @@ const Admin = () => {
             </Dialog>
           </Box>
         </TabPanel>
-        
+
         {/* Theme Tab Panel */}
         <TabPanel value={tabValue} index={5}>
           <Box sx={{ maxWidth: 800, mx: 'auto' }}>
@@ -1784,59 +1855,59 @@ const Admin = () => {
             <Typography variant="body2" sx={{ mb: 3 }}>
               Customize the colors and appearance of your website.
             </Typography>
-            
+
             <Grid container spacing={4}>
               <Grid item xs={12} sm={6}>
                 <Paper sx={{ p: 3, height: '100%' }}>
                   <Typography variant="h6" gutterBottom>
                     Primary Color
                   </Typography>
-                  <Box 
-                    sx={{ 
-                      width: '100%', 
-                      height: 100, 
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: 100,
                       bgcolor: primaryColor,
                       borderRadius: 1,
-                      mb: 2
-                    }} 
+                      mb: 2,
+                    }}
                   />
                   <TextField
                     fullWidth
                     label="Primary Color"
                     type="color"
                     value={primaryColor}
-                    onChange={(e) => handleColorChange(e, 'primary')}
+                    onChange={e => handleColorChange(e, 'primary')}
                     sx={{ mt: 2 }}
                   />
                 </Paper>
               </Grid>
-              
+
               <Grid item xs={12} sm={6}>
                 <Paper sx={{ p: 3, height: '100%' }}>
                   <Typography variant="h6" gutterBottom>
                     Secondary Color
                   </Typography>
-                  <Box 
-                    sx={{ 
-                      width: '100%', 
-                      height: 100, 
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: 100,
                       bgcolor: secondaryColor,
                       borderRadius: 1,
-                      mb: 2
-                    }} 
+                      mb: 2,
+                    }}
                   />
                   <TextField
                     fullWidth
                     label="Secondary Color"
                     type="color"
                     value={secondaryColor}
-                    onChange={(e) => handleColorChange(e, 'secondary')}
+                    onChange={e => handleColorChange(e, 'secondary')}
                     sx={{ mt: 2 }}
                   />
                 </Paper>
               </Grid>
             </Grid>
-            
+
             <Box sx={{ mt: 4, textAlign: 'center' }}>
               <Button
                 variant="contained"
@@ -1849,7 +1920,7 @@ const Admin = () => {
             </Box>
           </Box>
         </TabPanel>
-        
+
         {/* Settings Tab Panel */}
         <TabPanel value={tabValue} index={6}>
           <Box sx={{ maxWidth: 800, mx: 'auto' }}>
@@ -1857,9 +1928,10 @@ const Admin = () => {
               Site Settings
             </Typography>
             <Typography variant="body2" sx={{ mb: 3 }}>
-              Configure global site settings including title, contact information, and opening hours.
+              Configure global site settings including title, contact information, and opening
+              hours.
             </Typography>
-            
+
             <Box component="form" noValidate autoComplete="off">
               <Accordion defaultExpanded>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -1870,36 +1942,36 @@ const Admin = () => {
                     label="Site Title"
                     name="title"
                     value={siteSettings.title}
-                    onChange={(e) => handleSettingsChange(e)}
+                    onChange={e => handleSettingsChange(e)}
                     fullWidth
                     margin="normal"
                     helperText="The name of your site that appears in the header and footer"
                   />
-                  
+
                   <TextField
                     label="Footer Short Description"
                     name="shortDescription"
                     value={siteSettings.footer.shortDescription}
-                    onChange={(e) => handleSettingsChange(e, 'footer', 'shortDescription')}
+                    onChange={e => handleSettingsChange(e, 'footer', 'shortDescription')}
                     fullWidth
                     margin="normal"
                     multiline
                     rows={3}
                     helperText="Brief description that appears in the footer"
                   />
-                  
+
                   <TextField
                     label="Copyright Text"
                     name="copyright"
                     value={siteSettings.footer.copyright}
-                    onChange={(e) => handleSettingsChange(e, 'footer', 'copyright')}
+                    onChange={e => handleSettingsChange(e, 'footer', 'copyright')}
                     fullWidth
                     margin="normal"
                     helperText="Copyright text that appears at the bottom of the page"
                   />
                 </AccordionDetails>
               </Accordion>
-              
+
               <Accordion>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="h6">Address & Contact</Typography>
@@ -1911,7 +1983,7 @@ const Admin = () => {
                         label="Street Address"
                         name="street"
                         value={siteSettings.address.street}
-                        onChange={(e) => handleSettingsChange(e, 'address', 'street')}
+                        onChange={e => handleSettingsChange(e, 'address', 'street')}
                         fullWidth
                         margin="normal"
                       />
@@ -1921,7 +1993,7 @@ const Admin = () => {
                         label="City"
                         name="city"
                         value={siteSettings.address.city}
-                        onChange={(e) => handleSettingsChange(e, 'address', 'city')}
+                        onChange={e => handleSettingsChange(e, 'address', 'city')}
                         fullWidth
                         margin="normal"
                       />
@@ -1931,7 +2003,7 @@ const Admin = () => {
                         label="Postal Code"
                         name="postalCode"
                         value={siteSettings.address.postalCode}
-                        onChange={(e) => handleSettingsChange(e, 'address', 'postalCode')}
+                        onChange={e => handleSettingsChange(e, 'address', 'postalCode')}
                         fullWidth
                         margin="normal"
                       />
@@ -1941,18 +2013,18 @@ const Admin = () => {
                         label="Country"
                         name="country"
                         value={siteSettings.address.country}
-                        onChange={(e) => handleSettingsChange(e, 'address', 'country')}
+                        onChange={e => handleSettingsChange(e, 'address', 'country')}
                         fullWidth
                         margin="normal"
                       />
                     </Grid>
-                    
+
                     <Grid item xs={12} sm={6}>
                       <TextField
                         label="Phone Number"
                         name="phone"
                         value={siteSettings.contact.phone}
-                        onChange={(e) => handleSettingsChange(e, 'contact', 'phone')}
+                        onChange={e => handleSettingsChange(e, 'contact', 'phone')}
                         fullWidth
                         margin="normal"
                       />
@@ -1962,7 +2034,7 @@ const Admin = () => {
                         label="Email Address"
                         name="email"
                         value={siteSettings.contact.email}
-                        onChange={(e) => handleSettingsChange(e, 'contact', 'email')}
+                        onChange={e => handleSettingsChange(e, 'contact', 'email')}
                         fullWidth
                         margin="normal"
                       />
@@ -1970,7 +2042,7 @@ const Admin = () => {
                   </Grid>
                 </AccordionDetails>
               </Accordion>
-              
+
               <Accordion>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="h6">Opening Hours</Typography>
@@ -1982,7 +2054,7 @@ const Admin = () => {
                         <TextField
                           label={`Day(s) ${index + 1}`}
                           value={hour.days}
-                          onChange={(e) => handleHoursChange(index, 'days', e.target.value)}
+                          onChange={e => handleHoursChange(index, 'days', e.target.value)}
                           fullWidth
                           placeholder="e.g., Monday - Friday"
                         />
@@ -1991,7 +2063,7 @@ const Admin = () => {
                         <TextField
                           label={`Hours ${index + 1}`}
                           value={hour.hours}
-                          onChange={(e) => handleHoursChange(index, 'hours', e.target.value)}
+                          onChange={e => handleHoursChange(index, 'hours', e.target.value)}
                           fullWidth
                           placeholder="e.g., 9:00 - 17:00"
                         />
@@ -2000,7 +2072,7 @@ const Admin = () => {
                   ))}
                 </AccordionDetails>
               </Accordion>
-              
+
               <Accordion>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="h6">Social Media</Typography>
@@ -2010,47 +2082,47 @@ const Admin = () => {
                     label="Instagram URL"
                     name="instagram"
                     value={siteSettings.social.instagram}
-                    onChange={(e) => handleSettingsChange(e, 'social', 'instagram')}
+                    onChange={e => handleSettingsChange(e, 'social', 'instagram')}
                     fullWidth
                     margin="normal"
                     placeholder="https://instagram.com/youraccount"
                   />
-                  
+
                   <TextField
                     label="Facebook URL"
                     name="facebook"
                     value={siteSettings.social.facebook}
-                    onChange={(e) => handleSettingsChange(e, 'social', 'facebook')}
+                    onChange={e => handleSettingsChange(e, 'social', 'facebook')}
                     fullWidth
                     margin="normal"
                     placeholder="https://facebook.com/yourpage"
                   />
-                  
+
                   <TextField
                     label="Twitter URL"
                     name="twitter"
                     value={siteSettings.social.twitter}
-                    onChange={(e) => handleSettingsChange(e, 'social', 'twitter')}
+                    onChange={e => handleSettingsChange(e, 'social', 'twitter')}
                     fullWidth
                     margin="normal"
                     placeholder="https://twitter.com/youraccount"
                   />
                 </AccordionDetails>
               </Accordion>
-              
+
               <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
-                <Button 
-                  variant="outlined" 
-                  color="secondary" 
+                <Button
+                  variant="outlined"
+                  color="secondary"
                   onClick={handleResetSettings}
                   disabled={loading}
                 >
                   Reset to Default
                 </Button>
-                
-                <Button 
-                  variant="contained" 
-                  color="primary" 
+
+                <Button
+                  variant="contained"
+                  color="primary"
                   onClick={handleSaveSettings}
                   disabled={loading}
                   startIcon={loading ? <CircularProgress size={24} /> : null}
@@ -2062,11 +2134,11 @@ const Admin = () => {
           </Box>
         </TabPanel>
       </Paper>
-      
+
       {/* Dialogs */}
       {/* Add Category Dialog */}
-      <Dialog 
-        open={openDialog === 'new-category'} 
+      <Dialog
+        open={openDialog === 'new-category'}
         onClose={() => setOpenDialog(null)}
         maxWidth="sm"
         fullWidth
@@ -2104,9 +2176,9 @@ const Admin = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(null)}>Cancel</Button>
-          <Button 
-            variant="contained" 
-            color="primary" 
+          <Button
+            variant="contained"
+            color="primary"
             onClick={handleAddCategory}
             disabled={!newCategory.name || loading}
           >
@@ -2116,8 +2188,8 @@ const Admin = () => {
       </Dialog>
 
       {/* Add Period Dialog */}
-      <Dialog 
-        open={openDialog === 'new-period'} 
+      <Dialog
+        open={openDialog === 'new-period'}
         onClose={() => setOpenDialog(null)}
         maxWidth="sm"
         fullWidth
@@ -2174,9 +2246,9 @@ const Admin = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(null)}>Cancel</Button>
-          <Button 
-            variant="contained" 
-            color="primary" 
+          <Button
+            variant="contained"
+            color="primary"
             onClick={handleAddPeriod}
             disabled={!newPeriod.name || loading}
           >
@@ -2186,8 +2258,8 @@ const Admin = () => {
       </Dialog>
 
       {/* Add Product Dialog */}
-      <Dialog 
-        open={openDialog === 'new-product'} 
+      <Dialog
+        open={openDialog === 'new-product'}
         onClose={() => setOpenDialog(null)}
         maxWidth="md"
         fullWidth
@@ -2257,11 +2329,7 @@ const Admin = () => {
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth margin="normal" sx={{ minWidth: 200 }}>
                 <InputLabel>Period</InputLabel>
-                <Select
-                  name="period"
-                  value={newProduct.period}
-                  onChange={handleProductChange}
-                >
+                <Select name="period" value={newProduct.period} onChange={handleProductChange}>
                   <MenuItem value="">
                     <em>Select a period</em>
                   </MenuItem>
@@ -2274,26 +2342,16 @@ const Admin = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12}>
-              <Button
-                variant="outlined"
-                component="label"
-                startIcon={<UploadIcon />}
-                fullWidth
-                sx={{ mt: 2 }}
-              >
-                Upload Images
-                <input
-                  type="file"
-                  multiple
-                  hidden
-                  onChange={handleFileUpload}
-                />
-              </Button>
-              <Typography variant="caption" display="block" gutterBottom>
-                {newProduct.images.length > 0 
-                  ? `${newProduct.images.length} file(s) selected` 
-                  : 'No files selected'}
+              {/* Replace regular file upload with BlobImageManager */}
+              <Typography variant="subtitle2" gutterBottom>
+                Product Images
               </Typography>
+              <BlobImageManager
+                productId="general"
+                existingImages={newProduct.blobImages}
+                onImagesChange={handleBlobImagesChange}
+                maxImages={15}
+              />
             </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth margin="normal" sx={{ minWidth: 200 }}>
@@ -2350,7 +2408,9 @@ const Admin = () => {
                     onChange={handleProductChange}
                     margin="normal"
                     InputProps={{
-                      endAdornment: <InputAdornment position="end">{newProduct.measures.unit}</InputAdornment>
+                      endAdornment: (
+                        <InputAdornment position="end">{newProduct.measures.unit}</InputAdornment>
+                      ),
                     }}
                   />
                 </Grid>
@@ -2364,7 +2424,9 @@ const Admin = () => {
                     onChange={handleProductChange}
                     margin="normal"
                     InputProps={{
-                      endAdornment: <InputAdornment position="end">{newProduct.measures.unit}</InputAdornment>
+                      endAdornment: (
+                        <InputAdornment position="end">{newProduct.measures.unit}</InputAdornment>
+                      ),
                     }}
                   />
                 </Grid>
@@ -2378,7 +2440,9 @@ const Admin = () => {
                     onChange={handleProductChange}
                     margin="normal"
                     InputProps={{
-                      endAdornment: <InputAdornment position="end">{newProduct.measures.unit}</InputAdornment>
+                      endAdornment: (
+                        <InputAdornment position="end">{newProduct.measures.unit}</InputAdornment>
+                      ),
                     }}
                   />
                 </Grid>
@@ -2429,7 +2493,7 @@ const Admin = () => {
                 control={
                   <Switch
                     checked={newProduct.featured}
-                    onChange={(e) => setNewProduct({...newProduct, featured: e.target.checked})}
+                    onChange={e => setNewProduct({ ...newProduct, featured: e.target.checked })}
                     name="featured"
                     color="primary"
                   />
@@ -2442,9 +2506,9 @@ const Admin = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(null)}>Cancel</Button>
-          <Button 
-            variant="contained" 
-            color="primary" 
+          <Button
+            variant="contained"
+            color="primary"
             onClick={handleAddProduct}
             disabled={!newProduct.name || !newProduct.price || !newProduct.description || loading}
           >
@@ -2454,8 +2518,8 @@ const Admin = () => {
       </Dialog>
 
       {/* Edit Product Dialog */}
-      <Dialog 
-        open={openDialog === 'edit-product'} 
+      <Dialog
+        open={openDialog === 'edit-product'}
         onClose={() => setOpenDialog(null)}
         maxWidth="md"
         fullWidth
@@ -2597,7 +2661,11 @@ const Admin = () => {
                       onChange={handleEditProductChange}
                       margin="normal"
                       InputProps={{
-                        endAdornment: <InputAdornment position="end">{editProduct.measures.unit}</InputAdornment>
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            {editProduct.measures.unit}
+                          </InputAdornment>
+                        ),
                       }}
                     />
                   </Grid>
@@ -2611,7 +2679,11 @@ const Admin = () => {
                       onChange={handleEditProductChange}
                       margin="normal"
                       InputProps={{
-                        endAdornment: <InputAdornment position="end">{editProduct.measures.unit}</InputAdornment>
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            {editProduct.measures.unit}
+                          </InputAdornment>
+                        ),
                       }}
                     />
                   </Grid>
@@ -2625,7 +2697,11 @@ const Admin = () => {
                       onChange={handleEditProductChange}
                       margin="normal"
                       InputProps={{
-                        endAdornment: <InputAdornment position="end">{editProduct.measures.unit}</InputAdornment>
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            {editProduct.measures.unit}
+                          </InputAdornment>
+                        ),
                       }}
                     />
                   </Grid>
@@ -2676,7 +2752,7 @@ const Admin = () => {
                   control={
                     <Switch
                       checked={editProduct.featured}
-                      onChange={(e) => setEditProduct({...editProduct, featured: e.target.checked})}
+                      onChange={e => setEditProduct({ ...editProduct, featured: e.target.checked })}
                       name="featured"
                       color="primary"
                     />
@@ -2690,11 +2766,17 @@ const Admin = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(null)}>Cancel</Button>
-          <Button 
-            variant="contained" 
-            color="primary" 
+          <Button
+            variant="contained"
+            color="primary"
             onClick={handleSaveProduct}
-            disabled={!editProduct || !editProduct.name || !editProduct.price || !editProduct.description || loading}
+            disabled={
+              !editProduct ||
+              !editProduct.name ||
+              !editProduct.price ||
+              !editProduct.description ||
+              loading
+            }
           >
             {loading ? <CircularProgress size={24} /> : 'Save Changes'}
           </Button>
@@ -2702,8 +2784,8 @@ const Admin = () => {
       </Dialog>
 
       {/* Edit Category Dialog */}
-      <Dialog 
-        open={openDialog === 'edit-category'} 
+      <Dialog
+        open={openDialog === 'edit-category'}
         onClose={() => setOpenDialog(null)}
         maxWidth="sm"
         fullWidth
@@ -2745,9 +2827,9 @@ const Admin = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(null)}>Cancel</Button>
-          <Button 
-            variant="contained" 
-            color="primary" 
+          <Button
+            variant="contained"
+            color="primary"
             onClick={handleSaveCategory}
             disabled={!editCategory || !editCategory.name || loading}
           >
@@ -2757,8 +2839,8 @@ const Admin = () => {
       </Dialog>
 
       {/* Edit Period Dialog */}
-      <Dialog 
-        open={openDialog === 'edit-period'} 
+      <Dialog
+        open={openDialog === 'edit-period'}
         onClose={() => setOpenDialog(null)}
         maxWidth="sm"
         fullWidth
@@ -2819,9 +2901,9 @@ const Admin = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(null)}>Cancel</Button>
-          <Button 
-            variant="contained" 
-            color="primary" 
+          <Button
+            variant="contained"
+            color="primary"
             onClick={handleSavePeriod}
             disabled={!editPeriod || !editPeriod.name || loading}
           >
@@ -2829,12 +2911,8 @@ const Admin = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={6000} 
-        onClose={handleCloseSnackbar}
-      >
+
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
         <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
           {snackbar.message}
         </Alert>
@@ -2843,4 +2921,4 @@ const Admin = () => {
   );
 };
 
-export default Admin; 
+export default Admin;
