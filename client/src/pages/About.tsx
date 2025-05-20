@@ -37,48 +37,6 @@ const About = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={6}>
-          <ImageContainer>
-            <img
-              src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/17/22/fe/dd/castello-di-fossano-palio.jpg?w=1400&h=1400&s=1"
-              alt="Castello di Fossano Palio"
-            />
-          </ImageContainer>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Box
-            sx={{
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-            }}
-          >
-            <Typography variant="h3" component="h1" gutterBottom>
-              About Our Antique Shop
-            </Typography>
-            <Typography variant="body1" paragraph>
-              Welcome to our antique shop, where history comes alive through carefully curated
-              pieces that tell stories of bygone eras. Located in the heart of the city, our shop
-              has been a haven for collectors and enthusiasts for over two decades.
-            </Typography>
-            <Typography variant="body1" paragraph>
-              Our collection spans centuries, featuring everything from elegant furniture and
-              decorative arts to rare collectibles and vintage jewelry. Each item in our shop has
-              been carefully selected for its historical significance, craftsmanship, and unique
-              character.
-            </Typography>
-            <Typography variant="body1" paragraph>
-              We take pride in our expertise and are passionate about helping you find the perfect
-              piece to add to your collection or home. Whether you're a seasoned collector or just
-              beginning your journey into the world of antiques, our knowledgeable staff is here to
-              guide you.
-            </Typography>
-          </Box>
-        </Grid>
-      </Grid>
-
       <Box sx={{ mb: 6, textAlign: 'center' }}>
         <Typography variant="h2" gutterBottom>
           About Pischetola Antiques
@@ -101,8 +59,8 @@ const About = () => {
           <Grid item xs={12} md={6} component="div">
             <Box
               component="img"
-              src="https://images.unsplash.com/photo-1551215717-05bc1a6a7ccb?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-              alt="Antique store interior"
+              src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/17/22/fe/dd/castello-di-fossano-palio.jpg?w=1400&h=1400&s=1"
+              alt="Castello di Fossano Palio"
               sx={{
                 width: '100%',
                 height: 'auto',
