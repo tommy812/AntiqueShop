@@ -20,6 +20,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import SendIcon from '@mui/icons-material/Send';
+import { useTranslation } from 'react-i18next';
 
 // Import our custom form components
 import FormField from '../components/forms/FormField';
@@ -43,6 +44,7 @@ const Contact = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { settings } = useSettings();
+  const { t } = useTranslation();
   const [formState, setFormState] = useState<ContactForm>({
     name: '',
     email: '',
@@ -65,23 +67,23 @@ const Contact = () => {
 
     // Name validation
     if (!formState.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = t('contact.validation.name_min');
     } else if (formState.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+      newErrors.name = t('contact.validation.name_min');
     }
 
     // Email validation
     if (!formState.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('contact.validation.email_valid');
     } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formState.email)) {
-      newErrors.email = 'Invalid email address';
+      newErrors.email = t('contact.validation.email_valid');
     }
 
     // Message validation
     if (!formState.message.trim()) {
-      newErrors.message = 'Message is required';
+      newErrors.message = t('contact.validation.message_min');
     } else if (formState.message.trim().length < 10) {
-      newErrors.message = 'Message must be at least 10 characters';
+      newErrors.message = t('contact.validation.message_min');
     }
 
     setErrors(newErrors);
@@ -136,7 +138,7 @@ const Contact = () => {
 
     if (!isValid) {
       setFormError(true);
-      setErrorMessage('Please fix the errors in the form and try again.');
+      setErrorMessage(t('contact.error'));
       return;
     }
 
@@ -168,7 +170,7 @@ const Contact = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       setFormError(true);
-      setErrorMessage('There was an error sending your message. Please try again later.');
+      setErrorMessage(t('contact.error_alert'));
     } finally {
       setIsSubmitting(false);
     }
@@ -199,14 +201,13 @@ const Contact = () => {
         gutterBottom
         sx={{ textAlign: 'center', mb: 2, fontFamily: 'Playfair Display' }}
       >
-        Contact Us
+        {t('contact.title')}
       </Typography>
       <Typography
         variant="subtitle1"
         sx={{ textAlign: 'center', mb: 6, maxWidth: 700, mx: 'auto' }}
       >
-        Do you have a question about a specific piece or need assistance with a purchase? Our team
-        of antique experts is here to help.
+        {t('contact.subtitle')}
       </Typography>
 
       {/* Contact Information and Form */}
@@ -224,7 +225,7 @@ const Contact = () => {
               }}
             >
               <Typography variant="h5" gutterBottom sx={{ mb: 4, fontFamily: 'Playfair Display' }}>
-                Get in Touch
+                {t('contact.get_in_touch')}
               </Typography>
 
               <Stack spacing={3}>
@@ -232,7 +233,7 @@ const Contact = () => {
                   <LocationOnIcon sx={{ color: theme.palette.primary.main, mr: 2, mt: 0.5 }} />
                   <Box>
                     <Typography variant="subtitle2" gutterBottom>
-                      Our Location
+                      {t('contact.location')}
                     </Typography>
                     <Typography variant="body2">{contactInfo.address}</Typography>
                   </Box>
@@ -242,7 +243,7 @@ const Contact = () => {
                   <PhoneIcon sx={{ color: theme.palette.primary.main, mr: 2, mt: 0.5 }} />
                   <Box>
                     <Typography variant="subtitle2" gutterBottom>
-                      Phone
+                      {t('contact.phone')}
                     </Typography>
                     <Typography variant="body2">{contactInfo.phone}</Typography>
                   </Box>
@@ -252,7 +253,7 @@ const Contact = () => {
                   <EmailIcon sx={{ color: theme.palette.primary.main, mr: 2, mt: 0.5 }} />
                   <Box>
                     <Typography variant="subtitle2" gutterBottom>
-                      Email
+                      {t('contact.email_label')}
                     </Typography>
                     <Typography variant="body2">{contactInfo.email}</Typography>
                   </Box>
@@ -262,7 +263,7 @@ const Contact = () => {
                   <AccessTimeIcon sx={{ color: theme.palette.primary.main, mr: 2, mt: 0.5 }} />
                   <Box>
                     <Typography variant="subtitle2" gutterBottom>
-                      Opening Hours
+                      {t('contact.opening_hours')}
                     </Typography>
                     {contactInfo.hours.map((timeSlot, index) => (
                       <Typography key={index} variant="body2">
@@ -277,7 +278,7 @@ const Contact = () => {
               <Divider sx={{ my: 3 }} />
 
               <Typography variant="subtitle2" gutterBottom>
-                Follow Us
+                {t('contact.follow_us')}
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                 {settings?.social?.facebook && (
@@ -328,7 +329,7 @@ const Contact = () => {
               }}
             >
               <Typography variant="h5" gutterBottom sx={{ mb: 3, fontFamily: 'Playfair Display' }}>
-                Send Us a Message
+                {t('contact.send_message')}
               </Typography>
 
               <form onSubmit={handleSubmit}>
@@ -337,13 +338,13 @@ const Contact = () => {
                     <FormField
                       required
                       name="name"
-                      label="Your Name"
+                      label={t('contact.your_name')}
                       value={formState.name}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       errors={errors}
                       touched={touched}
-                      validationRules="Must be at least 2 characters"
+                      validationRules={t('contact.validation.name_min')}
                       disabled={isSubmitting}
                     />
                   </Grid>
@@ -352,14 +353,14 @@ const Contact = () => {
                     <FormField
                       required
                       name="email"
-                      label="Email Address"
+                      label={t('contact.email_address')}
                       type="email"
                       value={formState.email}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       errors={errors}
                       touched={touched}
-                      validationRules="Must be a valid email address"
+                      validationRules={t('contact.validation.email_valid')}
                       disabled={isSubmitting}
                     />
                   </Grid>
@@ -367,13 +368,13 @@ const Contact = () => {
                   <Grid item xs={12}>
                     <FormField
                       name="phone"
-                      label="Phone Number"
+                      label={t('contact.phone_number')}
                       value={formState.phone}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       errors={errors}
                       touched={touched}
-                      helperText="Optional, but helpful for urgent inquiries"
+                      helperText={t('contact.phone_helper')}
                       disabled={isSubmitting}
                     />
                   </Grid>
@@ -381,7 +382,7 @@ const Contact = () => {
                   <Grid item xs={12}>
                     <FormField
                       name="subject"
-                      label="Subject"
+                      label={t('contact.form.subject')}
                       value={formState.subject}
                       onChange={handleChange}
                       onBlur={handleBlur}
@@ -395,14 +396,14 @@ const Contact = () => {
                     <FormField
                       required
                       name="message"
-                      label="Your Message"
+                      label={t('contact.your_message')}
                       type="textarea"
                       value={formState.message}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       errors={errors}
                       touched={touched}
-                      validationRules="Must be at least 10 characters"
+                      validationRules={t('contact.validation.message_min')}
                       disabled={isSubmitting}
                     />
                   </Grid>
@@ -419,7 +420,7 @@ const Contact = () => {
                       sx={{ mt: 1, px: 4 }}
                       disabled={isSubmitting}
                     >
-                      {isSubmitting ? 'Sending...' : 'Send Message'}
+                      {isSubmitting ? t('contact.sending') : t('contact.send')}
                     </Button>
                   </Grid>
                 </Grid>
@@ -427,7 +428,7 @@ const Contact = () => {
 
               <Snackbar open={formSubmitted} autoHideDuration={6000} onClose={handleCloseSnackbar}>
                 <Alert onClose={handleCloseSnackbar} severity="success" variant="filled">
-                  Your message has been sent. We'll get back to you soon!
+                  {t('contact.success_alert')}
                 </Alert>
               </Snackbar>
 
@@ -444,7 +445,7 @@ const Contact = () => {
       {/* Google Map */}
       <Box sx={{ height: 400, width: '100%', overflow: 'hidden' }}>
         <Typography variant="h5" gutterBottom sx={{ mb: 3, fontFamily: 'Playfair Display' }}>
-          Our Location
+          {t('contact.location')}
         </Typography>
         <Box
           sx={{
