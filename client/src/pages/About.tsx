@@ -18,6 +18,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
 import HandymanIcon from '@mui/icons-material/Handyman';
 import { styled } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 
 const ImageContainer = styled(Paper)(({ theme }) => ({
   position: 'relative',
@@ -34,15 +35,67 @@ const ImageContainer = styled(Paper)(({ theme }) => ({
 
 const About = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
+
+  const expertiseServices = [
+    {
+      title: t('about.expertise.authentication.title'),
+      description: t('about.expertise.authentication.description'),
+      icon: <VerifiedIcon sx={{ fontSize: 40 }} />,
+      color: theme.palette.primary.main,
+    },
+    {
+      title: t('about.expertise.restoration.title'),
+      description: t('about.expertise.restoration.description'),
+      icon: <HandymanIcon sx={{ fontSize: 40 }} />,
+      color: theme.palette.secondary.main,
+    },
+    {
+      title: t('about.expertise.documentation.title'),
+      description: t('about.expertise.documentation.description'),
+      icon: <HistoryEduIcon sx={{ fontSize: 40 }} />,
+      color: theme.palette.primary.main,
+    },
+    {
+      title: t('about.expertise.shipping.title'),
+      description: t('about.expertise.shipping.description'),
+      icon: <LocalShippingIcon sx={{ fontSize: 40 }} />,
+      color: theme.palette.secondary.main,
+    },
+  ];
+
+  const teamMembers = [
+    {
+      name: t('about.team.members.marco.name'),
+      role: t('about.team.members.marco.role'),
+      bio: t('about.team.members.marco.bio'),
+      image:
+        'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+    },
+    {
+      name: t('about.team.members.davide.name'),
+      role: t('about.team.members.davide.role'),
+      bio: t('about.team.members.davide.bio'),
+      image:
+        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+    },
+    {
+      name: t('about.team.members.stefano.name'),
+      role: t('about.team.members.stefano.role'),
+      bio: t('about.team.members.stefano.bio'),
+      image:
+        'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+    },
+  ];
 
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
       <Box sx={{ mb: 6, textAlign: 'center' }}>
         <Typography variant="h2" gutterBottom>
-          About Pischetola Antiques
+          {t('about.title')}
         </Typography>
         <Typography variant="h5" color="text.secondary" sx={{ maxWidth: '800px', mx: 'auto' }}>
-          A legacy of excellence in antique collection and restoration since 1985
+          {t('about.subtitle')}
         </Typography>
       </Box>
 
@@ -71,65 +124,26 @@ const About = () => {
           </Grid>
           <Grid item xs={12} md={6} component="div">
             <Typography variant="h3" gutterBottom component="h2">
-              Our Story
+              {t('about.our_story.title')}
             </Typography>
             <Typography variant="body1" paragraph>
-              Pischetola Antiques was founded in 1985 by Antonio Pischetola, a passionate collector
-              with a keen eye for historical craftsmanship and authenticity. What began as a small
-              collection in a modest shop in Florence, Italy, has evolved into a respected
-              establishment in the world of fine antiques.
+              {t('about.our_story.paragraph1')}
             </Typography>
             <Typography variant="body1" paragraph>
-              For over three decades, we have dedicated ourselves to preserving the beauty and
-              history of exceptional pieces from various periods and regions. Our commitment to
-              quality, authenticity, and customer satisfaction has made us a trusted name among
-              collectors, interior designers, and antique enthusiasts worldwide.
+              {t('about.our_story.paragraph2')}
             </Typography>
-            <Typography variant="body1">
-              Today, Pischetola Antiques continues to be a family-owned business, carrying forward
-              Antonio's legacy of passion and expertise into the digital age, making our curated
-              collection accessible to a global audience.
-            </Typography>
+            <Typography variant="body1">{t('about.our_story.paragraph3')}</Typography>
           </Grid>
         </Grid>
       </Paper>
 
       <Box sx={{ mb: 6 }}>
         <Typography variant="h3" gutterBottom sx={{ textAlign: 'center', mb: 4 }}>
-          Our Expertise
+          {t('about.expertise.title')}
         </Typography>
 
         <Grid container spacing={4} component="div">
-          {[
-            {
-              title: 'Authentication',
-              description:
-                'Every piece in our collection undergoes rigorous authentication by our team of experts to ensure its provenance and historical accuracy.',
-              icon: <VerifiedIcon sx={{ fontSize: 40 }} />,
-              color: theme.palette.primary.main,
-            },
-            {
-              title: 'Restoration',
-              description:
-                'Our skilled craftsmen carefully restore each piece using traditional techniques and materials that honor the original craftsmanship.',
-              icon: <HandymanIcon sx={{ fontSize: 40 }} />,
-              color: theme.palette.secondary.main,
-            },
-            {
-              title: 'Documentation',
-              description:
-                'We provide detailed documentation for each item, including its history, origin, period, and any restoration work performed.',
-              icon: <HistoryEduIcon sx={{ fontSize: 40 }} />,
-              color: theme.palette.primary.main,
-            },
-            {
-              title: 'Worldwide Shipping',
-              description:
-                'We offer secure, insured shipping services to ensure your treasured purchases arrive safely at your doorstep, anywhere in the world.',
-              icon: <LocalShippingIcon sx={{ fontSize: 40 }} />,
-              color: theme.palette.secondary.main,
-            },
-          ].map((service, index) => (
+          {expertiseServices.map((service, index) => (
             <Grid item xs={12} sm={6} key={index} component="div">
               <Paper elevation={0} sx={{ p: 3, height: '100%', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -158,33 +172,11 @@ const About = () => {
 
       <Box sx={{ mb: 6 }}>
         <Typography variant="h3" gutterBottom sx={{ textAlign: 'center', mb: 4 }}>
-          Meet Our Team
+          {t('about.team.title')}
         </Typography>
 
         <Grid container spacing={4} component="div">
-          {[
-            {
-              name: 'Marco Pischetola',
-              role: 'Owner & Chief Curator',
-              bio: 'Son of founder Antonio Pischetola, Marco has been immersed in the world of antiques since childhood and has developed an extraordinary eye for exceptional pieces.',
-              image:
-                'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-            },
-            {
-              name: 'Davide Pischetola',
-              role: 'Master Restorer',
-              bio: 'With over 20 years of experience in antique restoration, Davide brings traditional craftsmanship techniques to preserve and restore our finest pieces.',
-              image:
-                'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-            },
-            {
-              name: 'Stefano Pischetola',
-              role: 'Authentication Specialist',
-              bio: 'Stefano combines his deep knowledge of art history with modern authentication techniques to ensure the authenticity and provenance of every piece in our collection.',
-              image:
-                'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-            },
-          ].map((member, index) => (
+          {teamMembers.map((member, index) => (
             <Grid item xs={12} sm={6} md={4} key={index} component="div">
               <Paper
                 elevation={0}
@@ -233,18 +225,17 @@ const About = () => {
         }}
       >
         <Typography variant="h4" gutterBottom>
-          Visit Our Showroom
+          {t('about.visit.title')}
         </Typography>
         <Typography variant="body1" paragraph>
-          We invite you to experience our collection in person at our showroom in the heart of
-          Florence.
+          {t('about.visit.description')}
         </Typography>
         <Typography variant="body1">
-          Via dei Fossi, 50, 50123 Florence, Italy
+          {t('about.visit.address')}
           <br />
-          Monday to Saturday: 10:00 AM - 6:00 PM
+          {t('about.visit.hours')}
           <br />
-          +39 055 1234567 | info@pischetolaantiques.com
+          {t('about.visit.contact')}
         </Typography>
       </Paper>
     </Container>

@@ -32,6 +32,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import CloseIcon from '@mui/icons-material/Close';
+import { useTranslation } from 'react-i18next';
 
 // Import API services
 import { getProducts, ProductFilters, Product } from '../services/productService';
@@ -54,6 +55,7 @@ const Catalogue = () => {
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('');
@@ -314,7 +316,7 @@ const Catalogue = () => {
   const FilterSection = () => (
     <Box sx={{ width: '100%' }}>
       <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
-        Filters
+        {t('catalogue.filters.title')}
       </Typography>
 
       <Accordion defaultExpanded sx={{ mb: 2, boxShadow: 'none', '&:before': { display: 'none' } }}>
@@ -329,7 +331,7 @@ const Catalogue = () => {
           }}
         >
           <Typography variant="subtitle1" fontWeight="bold">
-            Category
+            {t('catalogue.filter_sections.category')}
           </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ p: 0 }}>
@@ -344,7 +346,11 @@ const Catalogue = () => {
                   color="primary"
                 />
               }
-              label={<Typography variant="body2">All Categories</Typography>}
+              label={
+                <Typography variant="body2">
+                  {t('catalogue.filter_sections.all_categories')}
+                </Typography>
+              }
             />
             {categories.map(category => (
               <FormControlLabel
@@ -376,7 +382,7 @@ const Catalogue = () => {
           }}
         >
           <Typography variant="subtitle1" fontWeight="bold">
-            Period
+            {t('catalogue.filter_sections.period')}
           </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ p: 0 }}>
@@ -391,7 +397,11 @@ const Catalogue = () => {
                   color="primary"
                 />
               }
-              label={<Typography variant="body2">All Periods</Typography>}
+              label={
+                <Typography variant="body2">
+                  {t('catalogue.filter_sections.all_periods')}
+                </Typography>
+              }
             />
             {periods.map(period => (
               <FormControlLabel
@@ -423,25 +433,36 @@ const Catalogue = () => {
           }}
         >
           <Typography variant="subtitle1" fontWeight="bold">
-            Price Range
+            {t('catalogue.filter_sections.price_range')}
           </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ p: 0 }}>
           <FormGroup>
-            {PRICE_RANGES.map(range => (
-              <FormControlLabel
-                key={range.label}
-                control={
-                  <Checkbox
-                    checked={selectedPriceRange === range.label}
-                    onClick={() => handlePriceRangeChange(range.label)}
-                    size="small"
-                    color="primary"
-                  />
-                }
-                label={<Typography variant="body2">{range.label}</Typography>}
-              />
-            ))}
+            {PRICE_RANGES.map((range, index) => {
+              // Map the English labels to translation keys
+              const translationKeys = [
+                'catalogue.price_ranges.any',
+                'catalogue.price_ranges.under',
+                'catalogue.price_ranges.range1',
+                'catalogue.price_ranges.range2',
+                'catalogue.price_ranges.over',
+              ];
+
+              return (
+                <FormControlLabel
+                  key={range.label}
+                  control={
+                    <Checkbox
+                      checked={selectedPriceRange === range.label}
+                      onClick={() => handlePriceRangeChange(range.label)}
+                      size="small"
+                      color="primary"
+                    />
+                  }
+                  label={<Typography variant="body2">{t(translationKeys[index])}</Typography>}
+                />
+              );
+            })}
           </FormGroup>
         </AccordionDetails>
       </Accordion>
@@ -452,11 +473,10 @@ const Catalogue = () => {
     <Container maxWidth="xl" sx={{ py: 6 }}>
       <Box sx={{ mb: 6 }}>
         <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-          Catalogue
+          {t('catalogue.title')}
         </Typography>
         <Typography variant="subtitle1" color="text.secondary" paragraph>
-          Explore our collection of fine antiques and collectibles. Each piece has been carefully
-          selected for its quality, authenticity, and historical significance.
+          {t('catalogue.subtitle')}
         </Typography>
       </Box>
 
@@ -477,7 +497,7 @@ const Catalogue = () => {
           <Box
             sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
           >
-            <Typography variant="h6">Filters</Typography>
+            <Typography variant="h6">{t('catalogue.filters.title')}</Typography>
             <IconButton onClick={() => setMobileFiltersOpen(false)}>
               <CloseIcon />
             </IconButton>
@@ -520,13 +540,13 @@ const Catalogue = () => {
                     variant="outlined"
                     size="medium"
                   >
-                    Show Filters
+                    {t('catalogue.show_filters')}
                   </Button>
                 </Box>
                 {/* Search bar below filter button */}
                 <TextField
                   fullWidth
-                  placeholder="Search by name, description, or keywords..."
+                  placeholder={t('catalogue.search_placeholder')}
                   value={searchTerm}
                   onChange={handleSearchChange}
                   InputProps={{
@@ -543,7 +563,7 @@ const Catalogue = () => {
               /* Search bar only for desktop */
               <TextField
                 fullWidth
-                placeholder="Search by name, description, or keywords..."
+                placeholder={t('catalogue.search_placeholder')}
                 value={searchTerm}
                 onChange={handleSearchChange}
                 InputProps={{
@@ -564,8 +584,11 @@ const Catalogue = () => {
           >
             <Typography variant="body2" color="text.secondary">
               {loading
-                ? 'Loading products...'
-                : `Showing ${products.length} of ${pagination.totalItems} items`}
+                ? t('catalogue.loading_products')
+                : t('catalogue.showing_items', {
+                    count: products.length,
+                    total: pagination.totalItems,
+                  })}
             </Typography>
           </Box>
 
@@ -587,10 +610,10 @@ const Catalogue = () => {
           {!loading && products.length === 0 && !error && (
             <Box sx={{ textAlign: 'center', py: 6 }}>
               <Typography variant="h6" gutterBottom>
-                No products found
+                {t('catalogue.no_results_title')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Try adjusting your search or filter criteria
+                {t('catalogue.no_results_subtitle')}
               </Typography>
             </Box>
           )}
@@ -705,7 +728,7 @@ const Catalogue = () => {
                       component={RouterLink}
                       to={`/product/${product._id}`}
                     >
-                      View Details
+                      {t('homepage.product_view_details')}
                     </Button>
                   </CardActions>
                 </Card>

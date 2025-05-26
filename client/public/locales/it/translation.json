@@ -21,7 +21,19 @@
     "categories": {
       "title": "Sfoglia per Categoria",
       "view_all": "Vedi Tutte le Categorie"
-    }
+    },
+    "about_section": {
+      "title": "Chi è Pischetola Antichità",
+      "paragraph1": "Pischetola Antichità è un nome affidabile nel settore da oltre 30 anni. La nostra collezione presenta pezzi accuratamente selezionati che rappresentano la più raffinata maestria artigianale di vari periodi storici.",
+      "paragraph2": "Ogni oggetto del nostro inventario è stato autenticato e restaurato dal nostro team di esperti, garantendo sia l'accuratezza storica che una qualità eccezionale.",
+      "button": "Scopri di Più su di Noi"
+    },
+    "estimate_section": {
+      "title": "Richiedi una Stima",
+      "description": "Hai un oggetto antico che vorresti vendere o far valutare? Il nostro team di esperti può fornirti una stima dettagliata del suo valore.",
+      "button": "Richiedi Stima"
+    },
+    "product_view_details": "Vedi Dettagli"
   },
   "product": {
     "dimensions": "Dimensioni",
@@ -48,7 +60,28 @@
       "price_low": "Prezzo: dal più basso",
       "price_high": "Prezzo: dal più alto"
     },
-    "no_products": "Nessun prodotto trovato in base ai tuoi criteri."
+    "no_products": "Nessun prodotto trovato in base ai tuoi criteri.",
+    "subtitle": "Esplora la nostra collezione di pregiati oggetti d'antiquariato. Ogni pezzo è stato selezionato attentamente per la sua qualità, autenticità e rilevanza storica.",
+    "search_placeholder": "Cerca per nome, descrizione o parole chiave...",
+    "show_filters": "Mostra Filtri",
+    "showing_items": "Mostrando {{count}} di {{total}} oggetti",
+    "loading_products": "Caricamento prodotti...",
+    "no_results_title": "Nessun prodotto trovato",
+    "no_results_subtitle": "Prova a modificare i criteri di ricerca o filtro",
+    "filter_sections": {
+      "category": "Categoria",
+      "period": "Periodo",
+      "price_range": "Fascia di Prezzo",
+      "all_categories": "Tutte le Categorie",
+      "all_periods": "Tutti i Periodi"
+    },
+    "price_ranges": {
+      "any": "Qualsiasi Prezzo",
+      "under": "Sotto €1.000",
+      "range1": "€1.000 - €2.000",
+      "range2": "€2.000 - €5.000",
+      "over": "Oltre €5.000"
+    }
   },
   "footer": {
     "copyright": "© {{year}} Pischetola Antichità. Tutti i diritti riservati.",
@@ -66,30 +99,166 @@
       "submit": "Invia Messaggio"
     },
     "success": "Il tuo messaggio è stato inviato con successo. Ti risponderemo presto.",
-    "error": "Si è verificato un errore nell'invio del messaggio. Riprova."
-  },
-  "estimate": {
-    "title": "Richiedi una Stima",
-    "subtitle": "Vuoi vendere? Invia il tuo oggetto per una valutazione da parte dei nostri esperti.",
-    "form": {
-      "name": "Nome",
-      "email": "Email",
-      "phone": "Numero di Telefono",
-      "item_description": "Descrizione dell'Oggetto",
-      "dimensions": "Dimensioni (opzionale)",
-      "age": "Età/Periodo Approssimativo (se conosciuto)",
-      "photos": "Carica Foto",
-      "additional_info": "Informazioni Aggiuntive",
-      "submit": "Richiedi Stima"
+    "error": "Si è verificato un errore nell'invio del messaggio. Riprova.",
+    "get_in_touch": "Mettiti in Contatto",
+    "location": "La Nostra Sede",
+    "phone": "Telefono",
+    "email_label": "Email",
+    "opening_hours": "Orari di Apertura",
+    "follow_us": "Seguici",
+    "send_message": "Inviaci un Messaggio",
+    "your_name": "Il Tuo Nome",
+    "email_address": "Indirizzo Email",
+    "phone_number": "Numero di Telefono",
+    "phone_helper": "Opzionale, ma utile per richieste urgenti",
+    "your_message": "Il Tuo Messaggio",
+    "validation": {
+      "name_min": "Deve contenere almeno 2 caratteri",
+      "email_valid": "Deve essere un indirizzo email valido",
+      "message_min": "Deve contenere almeno 10 caratteri"
     },
-    "success": "La tua richiesta di stima è stata inviata. I nostri esperti ti contatteranno a breve.",
-    "error": "Si è verificato un errore nell'invio della richiesta. Riprova."
+    "sending": "Invio in corso...",
+    "send": "Invia Messaggio",
+    "success_alert": "Il tuo messaggio è stato inviato. Ti risponderemo presto!",
+    "error_alert": "Si è verificato un errore. Riprova."
   },
   "about": {
     "title": "Chi è Pischetola Antichità",
-    "our_story": "La Nostra Storia",
-    "expertise": "La Nostra Esperienza",
-    "team": "Il Nostro Team"
+    "subtitle": "Un'eredità di eccellenza nella collezione e nel restauro di antichità dal 1985",
+    "our_story": {
+      "title": "La Nostra Storia",
+      "paragraph1": "Pischetola Antichità è stata fondata nel 1985 da Antonio Pischetola, un collezionista appassionato con un occhio attento per la maestria artigianale storica e l'autenticità. Ciò che iniziò come una piccola collezione in un modesto negozio a Firenze, Italia, si è evoluto in un'istituzione rispettata nel mondo delle belle antichità.",
+      "paragraph2": "Per oltre tre decenni, ci siamo dedicati a preservare la bellezza e la storia di pezzi eccezionali di vari periodi e regioni. Il nostro impegno per la qualità, l'autenticità e la soddisfazione del cliente ci ha reso un nome affidabile tra collezionisti, interior designer e appassionati di antichità in tutto il mondo.",
+      "paragraph3": "Oggi, Pischetola Antichità continua ad essere un'azienda a conduzione familiare, portando avanti l'eredità di passione e competenza di Antonio nell'era digitale, rendendo la nostra collezione curata accessibile a un pubblico globale."
+    },
+    "expertise": {
+      "title": "La Nostra Esperienza",
+      "authentication": {
+        "title": "Autenticazione",
+        "description": "Ogni pezzo della nostra collezione viene sottoposto a rigorosa autenticazione dal nostro team di esperti per garantirne la provenienza e l'accuratezza storica."
+      },
+      "restoration": {
+        "title": "Restauro",
+        "description": "I nostri artigiani esperti restaurano attentamente ogni pezzo utilizzando tecniche e materiali tradizionali che onorano la maestria artigianale originale."
+      },
+      "documentation": {
+        "title": "Documentazione",
+        "description": "Forniamo documentazione dettagliata per ogni oggetto, inclusa la sua storia, origine, periodo e qualsiasi lavoro di restauro eseguito."
+      },
+      "shipping": {
+        "title": "Spedizione Mondiale",
+        "description": "Offriamo servizi di spedizione sicuri e assicurati per garantire che i tuoi acquisti preziosi arrivino in sicurezza a casa tua, ovunque nel mondo."
+      }
+    },
+    "team": {
+      "title": "Incontra il Nostro Team",
+      "members": {
+        "marco": {
+          "name": "Marco Pischetola",
+          "role": "Proprietario e Curatore Capo",
+          "bio": "Figlio del fondatore Antonio Pischetola, Marco è stato immerso nel mondo delle antichità fin dall'infanzia e ha sviluppato un occhio straordinario per pezzi eccezionali."
+        },
+        "davide": {
+          "name": "Davide Pischetola",
+          "role": "Maestro Restauratore",
+          "bio": "Con oltre 20 anni di esperienza nel restauro di antichità, Davide applica tecniche artigianali tradizionali per preservare e restaurare i nostri pezzi più pregiati."
+        },
+        "stefano": {
+          "name": "Stefano Pischetola",
+          "role": "Specialista in Autenticazione",
+          "bio": "Stefano combina la sua profonda conoscenza della storia dell'arte con moderne tecniche di autenticazione per garantire l'autenticità e la provenienza di ogni pezzo nella nostra collezione."
+        }
+      }
+    },
+    "visit": {
+      "title": "Visita il Nostro Showroom",
+      "description": "Ti invitiamo a vivere la nostra collezione di persona nel nostro showroom nel cuore di Firenze.",
+      "address": "Via dei Fossi, 50, 50123 Firenze, Italia",
+      "hours": "Lunedì a Sabato: 10:00 - 18:00",
+      "contact": "+39 055 1234567 | info@pischetolaantiques.com"
+    }
+  },
+  "estimate": {
+    "title": "Richiedi una Stima",
+    "subtitle": "Se possiedi antichità o oggetti da collezione che vorresti vendere, saremo lieti di fornirti una stima gratuita del loro valore.",
+    "items_section": {
+      "title": "Tipologie di Oggetti che Potremmo Acquistare",
+      "description": "Siamo interessati ad acquisire una vasta gamma di antichità e oggetti da collezione. Ecco alcuni esempi di oggetti che tipicamente consideriamo:",
+      "furniture": {
+        "title": "Mobili Antichi",
+        "description": "Mobili di vari periodi e stili, in particolare dal XVIII alla metà del XX secolo."
+      },
+      "paintings": {
+        "title": "Dipinti e Belle Arti",
+        "description": "Dipinti originali, disegni e belle arti di diversi movimenti ed epoche."
+      },
+      "decorative": {
+        "title": "Arti Decorative",
+        "description": "Orologi, specchi, bronzi, sculture e altri oggetti decorativi."
+      },
+      "silver": {
+        "title": "Argento e Gioielli",
+        "description": "Pezzi d'argento antichi, gioielli e oggetti in metalli preziosi con valore storico o artistico."
+      },
+      "ceramics": {
+        "title": "Ceramiche e Porcellane",
+        "description": "Porcellane raffinate, ceramiche e vasellame di produttori e tradizioni rinomate."
+      }
+    },
+    "options_section": {
+      "title": "Come Preferisci Procedere?",
+      "contact_option": {
+        "title": "Contattaci Direttamente",
+        "description": "Se preferisci parlare direttamente con qualcuno dei tuoi oggetti, puoi contattare il nostro team attraverso la pagina contatti.",
+        "button": "Vai alla Pagina Contatti"
+      },
+      "form_option": {
+        "title": "Usa il Modulo Sottostante",
+        "description": "Compila il nostro semplice modulo di richiesta stima per fornire dettagli sul tuo oggetto e ti risponderemo con una valutazione.",
+        "button": "Vai al Modulo"
+      }
+    },
+    "form": {
+      "title": "Modulo di Richiesta Stima",
+      "item_details": "Dettagli dell'Oggetto",
+      "item_name": "Nome dell'Oggetto",
+      "item_name_helper": "Inserisci un nome descrittivo",
+      "category": "Categoria",
+      "description": "Descrizione",
+      "description_helper": "Includere dettagli su dimensioni, materiali e eventuali marchi o firme",
+      "condition": "Condizione",
+      "condition_excellent": "Eccellente",
+      "condition_good": "Buona",
+      "condition_fair": "Discreta",
+      "condition_poor": "Scarsa/Danneggiata",
+      "photos": "Foto",
+      "upload_images": "Carica Immagini",
+      "photos_helper": "Puoi caricare fino a 5 immagini (max 5MB ciascuna)",
+      "contact_information": "Informazioni di Contatto",
+      "full_name": "Nome Completo",
+      "email": "Email",
+      "email_helper": "Fornisci email o telefono",
+      "phone": "Telefono",
+      "phone_helper": "Fornisci email o telefono",
+      "additional_notes": "Note Aggiuntive",
+      "additional_notes_helper": "Qualsiasi altra informazione che vorresti condividere",
+      "submit": "Invia Richiesta",
+      "info_message": "Inviando questo modulo, stai richiedendo una stima per il tuo oggetto. I nostri esperti esamineranno le tue informazioni e ti risponderanno entro 2-3 giorni lavorativi."
+    },
+    "thank_you": {
+      "title": "Grazie!",
+      "message1": "La tua richiesta di stima è stata inviata con successo.",
+      "message2": "Uno dei nostri esperti esaminerà le tue informazioni e ti risponderà a breve. Se hai domande urgenti, non esitare a contattarci direttamente.",
+      "button": "Torna alla Homepage"
+    },
+    "validation": {
+      "item_name_required": "Il nome dell'oggetto è obbligatorio",
+      "description_required": "La descrizione è obbligatoria",
+      "description_short": "Fornisci una descrizione più dettagliata (almeno 10 caratteri)",
+      "name_required": "Il nome è obbligatorio",
+      "contact_required": "Fornisci email o numero di telefono",
+      "email_invalid": "Indirizzo email non valido"
+    }
   },
   "language": {
     "select": "Seleziona Lingua",

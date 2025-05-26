@@ -11,17 +11,29 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
-  Stepper,
-  Step,
-  StepLabel,
   useTheme,
   Alert,
   SelectChangeEvent,
   CircularProgress,
   Snackbar,
+  Divider,
+  Card,
+  CardContent,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Link,
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ChairIcon from '@mui/icons-material/Chair';
+import ColorLensIcon from '@mui/icons-material/ColorLens';
+import BrushIcon from '@mui/icons-material/Brush';
+import DiamondIcon from '@mui/icons-material/Diamond';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 // Import our custom form component
 import FormField from '../components/forms/FormField';
@@ -37,33 +49,14 @@ const categories = [
   'Other',
 ];
 
-const periods = [
-  'Renaissance',
-  'Baroque',
-  'Georgian',
-  'Victorian',
-  'Art Nouveau',
-  'Art Deco',
-  '20th Century',
-  'Unknown',
-];
-
-const steps = ['Item Details', 'Your Information', 'Confirmation'];
-
 interface FormData {
   itemName: string;
   category: string;
-  period: string;
   description: string;
   condition: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   phone: string;
-  country: string;
-  city: string;
-  preferredContact: string;
-  timeframe: string;
   additionalNotes: string;
 }
 
@@ -73,7 +66,8 @@ interface FormErrors {
 
 const Estimate: React.FC = () => {
   const theme = useTheme();
-  const [activeStep, setActiveStep] = useState(0);
+  const navigate = useNavigate();
+  const { t } = useTranslation();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
@@ -87,21 +81,13 @@ const Estimate: React.FC = () => {
     // Item details
     itemName: '',
     category: '',
-    period: '',
     description: '',
     condition: 'good',
 
     // Contact information
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
     phone: '',
-    country: '',
-    city: '',
-    preferredContact: 'email',
-
-    // Additional information
-    timeframe: 'not_urgent',
     additionalNotes: '',
   });
 
@@ -135,380 +121,105 @@ const Estimate: React.FC = () => {
       [name]: true,
     }));
 
-    // Validate the form
-    validateStepFields(activeStep);
+    validateForm();
   };
 
-  // Validate fields for current step
-  const validateStepFields = (step: number): boolean => {
+  // Validate form fields
+  const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (step === 0) {
-      // Validate item details
-      if (!formData.itemName.trim()) {
-        newErrors.itemName = 'Item name is required';
-      }
-
-      if (!formData.category) {
-        newErrors.category = 'Category is required';
-      }
-
-      if (!formData.description.trim()) {
-        newErrors.description = 'Description is required';
-      } else if (formData.description.trim().length < 10) {
-        newErrors.description =
-          'Please provide a more detailed description (at least 10 characters)';
-      }
+    // Validate item details
+    if (!formData.itemName.trim()) {
+      newErrors.itemName = t('estimate.validation.item_name_required');
     }
 
-    if (step === 1) {
-      // Validate contact information
-      if (!formData.firstName.trim()) {
-        newErrors.firstName = 'First name is required';
-      }
+    if (!formData.description.trim()) {
+      newErrors.description = t('estimate.validation.description_required');
+    } else if (formData.description.trim().length < 10) {
+      newErrors.description = t('estimate.validation.description_short');
+    }
 
-      if (!formData.lastName.trim()) {
-        newErrors.lastName = 'Last name is required';
-      }
+    // Validate contact info
+    if (!formData.name.trim()) {
+      newErrors.name = t('estimate.validation.name_required');
+    }
 
-      if (!formData.email.trim()) {
-        newErrors.email = 'Email is required';
-      } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)) {
-        newErrors.email = 'Invalid email address';
-      }
-
-      if (!formData.phone.trim()) {
-        newErrors.phone = 'Phone number is required';
-      }
+    // Require either email or phone
+    if (!formData.email.trim() && !formData.phone.trim()) {
+      newErrors.email = t('estimate.validation.contact_required');
+      newErrors.phone = t('estimate.validation.contact_required');
+    } else if (
+      formData.email.trim() &&
+      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)
+    ) {
+      newErrors.email = t('estimate.validation.email_invalid');
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
-    // Validate current step fields before proceeding
-    if (!isStepValid()) {
-      // Mark all fields in current step as touched
-      const fieldsToValidate = getStepFields(activeStep);
-      const newTouched = { ...touched };
+  const handleSubmit = () => {
+    // Mark all fields as touched
+    const fieldsToValidate = [
+      'itemName',
+      'category',
+      'description',
+      'condition',
+      'name',
+      'email',
+      'phone',
+    ];
+    const newTouched = { ...touched };
 
-      fieldsToValidate.forEach(field => {
-        newTouched[field] = true;
-      });
+    fieldsToValidate.forEach(field => {
+      newTouched[field] = true;
+    });
 
-      setTouched(newTouched);
+    setTouched(newTouched);
 
-      // Force validation to update errors
-      validateStepFields(activeStep);
-
+    // Validate form
+    if (!validateForm()) {
       return;
     }
 
-    if (activeStep === steps.length - 1) {
-      // Submit form
-      setLoading(true);
+    // Submit form
+    setLoading(true);
 
-      estimateService
-        .createEstimate(formData)
-        .then(() => {
-          setSubmitted(true);
-          setLoading(false);
-          setSnackbar({
-            open: true,
-            message: 'Your estimate request has been submitted successfully!',
-            severity: 'success',
-          });
-        })
-        .catch(error => {
-          console.error('Error submitting estimate request:', error);
-          setLoading(false);
-          setSnackbar({
-            open: true,
-            message: 'There was an error submitting your request. Please try again.',
-            severity: 'error',
-          });
+    // Prepare data for backend (adjust based on your backend structure)
+    const requestData = {
+      itemName: formData.itemName,
+      category: formData.category,
+      description: formData.description,
+      condition: formData.condition,
+      firstName: formData.name.split(' ')[0],
+      lastName: formData.name.split(' ').slice(1).join(' '),
+      email: formData.email,
+      phone: formData.phone,
+      preferredContact: formData.email ? 'email' : 'phone', // Default to email if provided, otherwise phone
+      additionalNotes: formData.additionalNotes,
+    };
+
+    estimateService
+      .createEstimate(requestData)
+      .then(() => {
+        setSubmitted(true);
+        setLoading(false);
+        setSnackbar({
+          open: true,
+          message: t('estimate.thank_you.message1'),
+          severity: 'success',
         });
-    } else {
-      setActiveStep(prevStep => prevStep + 1);
-    }
-  };
-
-  const handleBack = () => {
-    setActiveStep(prevStep => prevStep - 1);
-  };
-
-  // Get fields that belong to the current step
-  const getStepFields = (step: number): string[] => {
-    if (step === 0) {
-      return ['itemName', 'category', 'period', 'description', 'condition'];
-    }
-    if (step === 1) {
-      return ['firstName', 'lastName', 'email', 'phone', 'country', 'city', 'preferredContact'];
-    }
-    return ['timeframe', 'additionalNotes'];
-  };
-
-  // Check if current step has validation errors
-  const isStepValid = (): boolean => {
-    // Check if step is valid based on current errors
-    const fieldsToValidate = getStepFields(activeStep);
-
-    // Only count errors for fields in the current step
-    const stepErrors = Object.keys(errors).filter(key => fieldsToValidate.includes(key));
-
-    return stepErrors.length === 0;
-  };
-
-  const getStepContent = (step: number) => {
-    switch (step) {
-      case 0:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <FormField
-                required
-                name="itemName"
-                label="Item Name"
-                value={formData.itemName}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                errors={errors}
-                touched={touched}
-                helperText="Enter a descriptive name"
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormField
-                required
-                name="category"
-                label="Category"
-                options={categories.map(cat => ({ value: cat, label: cat }))}
-                value={formData.category}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                errors={errors}
-                touched={touched}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormField
-                name="period"
-                label="Period/Style"
-                options={periods.map(p => ({ value: p, label: p }))}
-                value={formData.period}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                errors={errors}
-                touched={touched}
-                helperText="Select if known"
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <FormField
-                required
-                name="description"
-                label="Description"
-                type="textarea"
-                value={formData.description}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                errors={errors}
-                touched={touched}
-                helperText="Please include details about size, materials, and any markings or signatures"
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <FormControl component="fieldset">
-                <FormLabel component="legend">Condition</FormLabel>
-                <RadioGroup row name="condition" value={formData.condition} onChange={handleChange}>
-                  <FormControlLabel value="excellent" control={<Radio />} label="Excellent" />
-                  <FormControlLabel value="good" control={<Radio />} label="Good" />
-                  <FormControlLabel value="fair" control={<Radio />} label="Fair" />
-                  <FormControlLabel value="poor" control={<Radio />} label="Poor/Damaged" />
-                </RadioGroup>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Photos
-                </Typography>
-                <Button variant="outlined" component="label" startIcon={<CloudUploadIcon />}>
-                  Upload Images
-                  <input type="file" hidden multiple accept="image/*" />
-                </Button>
-                <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                  You can upload up to 5 images (max 5MB each)
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        );
-      case 1:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <FormField
-                required
-                name="firstName"
-                label="First Name"
-                value={formData.firstName}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                errors={errors}
-                touched={touched}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormField
-                required
-                name="lastName"
-                label="Last Name"
-                value={formData.lastName}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                errors={errors}
-                touched={touched}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormField
-                required
-                name="email"
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                errors={errors}
-                touched={touched}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormField
-                required
-                name="phone"
-                label="Phone"
-                value={formData.phone}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                errors={errors}
-                touched={touched}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormField
-                name="country"
-                label="Country"
-                value={formData.country}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                errors={errors}
-                touched={touched}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormField
-                name="city"
-                label="City"
-                value={formData.city}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                errors={errors}
-                touched={touched}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <FormControl component="fieldset">
-                <FormLabel component="legend">Preferred Contact Method</FormLabel>
-                <RadioGroup
-                  row
-                  name="preferredContact"
-                  value={formData.preferredContact}
-                  onChange={handleChange}
-                >
-                  <FormControlLabel value="email" control={<Radio />} label="Email" />
-                  <FormControlLabel value="phone" control={<Radio />} label="Phone" />
-                </RadioGroup>
-              </FormControl>
-            </Grid>
-          </Grid>
-        );
-      case 2:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <FormControl component="fieldset">
-                <FormLabel component="legend">Timeframe</FormLabel>
-                <RadioGroup name="timeframe" value={formData.timeframe} onChange={handleChange}>
-                  <FormControlLabel
-                    value="urgent"
-                    control={<Radio />}
-                    label="Urgent (within 1-2 days)"
-                  />
-                  <FormControlLabel
-                    value="normal"
-                    control={<Radio />}
-                    label="Normal (within a week)"
-                  />
-                  <FormControlLabel
-                    value="not_urgent"
-                    control={<Radio />}
-                    label="Not urgent (no specific timeframe)"
-                  />
-                </RadioGroup>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12}>
-              <FormField
-                name="additionalNotes"
-                label="Additional Notes or Questions"
-                type="textarea"
-                value={formData.additionalNotes}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                errors={errors}
-                touched={touched}
-                helperText="Any other information you'd like to share"
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Alert severity="info" sx={{ mt: 2 }}>
-                By submitting this form, you're requesting an appraisal of your item. Our experts
-                will review your information and get back to you within the requested timeframe.
-              </Alert>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Review your information:
-                </Typography>
-                <Typography variant="body2">
-                  Please review all the information you've provided before submitting the form. Our
-                  appraisal will be based on this information and the photos you've uploaded.
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        );
-      default:
-        return 'Unknown step';
-    }
+      })
+      .catch(error => {
+        console.error('Error submitting estimate request:', error);
+        setLoading(false);
+        setSnackbar({
+          open: true,
+          message: t('common.error'),
+          severity: 'error',
+        });
+      });
   };
 
   // Handler for closing snackbar
@@ -516,21 +227,52 @@ const Estimate: React.FC = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleContactRedirect = () => {
+    navigate('/contact');
+  };
+
+  const itemsWePurchase = [
+    {
+      icon: <ChairIcon />,
+      title: t('estimate.items_section.furniture.title'),
+      description: t('estimate.items_section.furniture.description'),
+    },
+    {
+      icon: <ColorLensIcon />,
+      title: t('estimate.items_section.paintings.title'),
+      description: t('estimate.items_section.paintings.description'),
+    },
+    {
+      icon: <AutoAwesomeIcon />,
+      title: t('estimate.items_section.decorative.title'),
+      description: t('estimate.items_section.decorative.description'),
+    },
+    {
+      icon: <DiamondIcon />,
+      title: t('estimate.items_section.silver.title'),
+      description: t('estimate.items_section.silver.description'),
+    },
+    {
+      icon: <BrushIcon />,
+      title: t('estimate.items_section.ceramics.title'),
+      description: t('estimate.items_section.ceramics.description'),
+    },
+  ];
+
   return (
-    <Container maxWidth="md" sx={{ py: 6 }}>
+    <Container maxWidth="lg" sx={{ py: 6 }}>
       <Typography
         variant="h3"
         gutterBottom
         sx={{ textAlign: 'center', mb: 2, fontFamily: 'Playfair Display' }}
       >
-        Request an Estimate
+        {t('estimate.title')}
       </Typography>
       <Typography
         variant="subtitle1"
         sx={{ textAlign: 'center', mb: 6, maxWidth: 700, mx: 'auto' }}
       >
-        Fill out this form to request a free estimate for your antique or collectible item. Our
-        experts will evaluate your item and provide you with an estimated value.
+        {t('estimate.subtitle')}
       </Typography>
 
       {/* Success message on submission */}
@@ -557,15 +299,13 @@ const Estimate: React.FC = () => {
         >
           <CheckCircleOutlineIcon sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
           <Typography variant="h5" gutterBottom>
-            Thank You!
+            {t('estimate.thank_you.title')}
           </Typography>
           <Typography variant="body1" paragraph>
-            Your estimate request has been submitted successfully.
+            {t('estimate.thank_you.message1')}
           </Typography>
           <Typography variant="body1" paragraph>
-            One of our experts will review your information and get back to you within the specified
-            timeframe. If you have any urgent questions, please don't hesitate to contact us
-            directly.
+            {t('estimate.thank_you.message2')}
           </Typography>
           <Button
             variant="contained"
@@ -573,49 +313,318 @@ const Estimate: React.FC = () => {
             onClick={() => (window.location.href = '/')}
             sx={{ mt: 2 }}
           >
-            Return to Homepage
+            {t('estimate.thank_you.button')}
           </Button>
         </Paper>
       ) : (
-        <Paper
-          elevation={0}
-          sx={{ p: { xs: 3, md: 4 }, border: `1px solid ${theme.palette.divider}` }}
-        >
-          <Stepper activeStep={activeStep} sx={{ mb: 4 }} alternativeLabel>
-            {steps.map(label => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-
-          <Box>
-            {getStepContent(activeStep)}
-
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                mt: 4,
-                pt: 2,
-                borderTop: `1px solid ${theme.palette.divider}`,
-              }}
+        <Grid container spacing={4}>
+          {/* Items We Purchase Section */}
+          <Grid item xs={12}>
+            <Paper
+              elevation={0}
+              sx={{ p: { xs: 3, md: 4 }, border: `1px solid ${theme.palette.divider}`, mb: 4 }}
             >
-              <Button disabled={activeStep === 0} onClick={handleBack}>
-                Back
-              </Button>
-              <Button variant="contained" color="primary" onClick={handleNext} disabled={loading}>
-                {loading ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : activeStep === steps.length - 1 ? (
-                  'Submit Request'
-                ) : (
-                  'Next'
-                )}
-              </Button>
-            </Box>
-          </Box>
-        </Paper>
+              <Typography variant="h5" gutterBottom sx={{ fontFamily: 'Playfair Display' }}>
+                {t('estimate.items_section.title')}
+              </Typography>
+              <Typography variant="body1" paragraph>
+                {t('estimate.items_section.description')}
+              </Typography>
+
+              <Grid container spacing={3} sx={{ mt: 2 }}>
+                {itemsWePurchase.map((item, index) => (
+                  <Grid item xs={12} sm={6} md={4} key={index}>
+                    <Card
+                      elevation={0}
+                      sx={{ height: '100%', border: `1px solid ${theme.palette.divider}` }}
+                    >
+                      <CardContent>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                          <Box sx={{ color: 'primary.main', mr: 1 }}>{item.icon}</Box>
+                          <Typography variant="h6" component="h3">
+                            {item.title}
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2">{item.description}</Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Paper>
+          </Grid>
+
+          {/* Options Box */}
+          <Grid item xs={12}>
+            <Paper
+              elevation={0}
+              sx={{ p: { xs: 3, md: 4 }, border: `1px solid ${theme.palette.divider}`, mb: 4 }}
+            >
+              <Typography variant="h5" gutterBottom sx={{ fontFamily: 'Playfair Display' }}>
+                {t('estimate.options_section.title')}
+              </Typography>
+
+              <Grid container spacing={4} sx={{ mt: 2 }}>
+                <Grid item xs={12} md={6}>
+                  <Box
+                    sx={{
+                      p: 3,
+                      border: `1px solid ${theme.palette.divider}`,
+                      height: '100%',
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Typography variant="h6" gutterBottom>
+                      {t('estimate.options_section.contact_option.title')}
+                    </Typography>
+                    <Typography variant="body2" paragraph>
+                      {t('estimate.options_section.contact_option.description')}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleContactRedirect}
+                      sx={{ mt: 2 }}
+                    >
+                      {t('estimate.options_section.contact_option.button')}
+                    </Button>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Box
+                    sx={{
+                      p: 3,
+                      border: `1px solid ${theme.palette.divider}`,
+                      height: '100%',
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Typography variant="h6" gutterBottom>
+                      {t('estimate.options_section.form_option.title')}
+                    </Typography>
+                    <Typography variant="body2" paragraph>
+                      {t('estimate.options_section.form_option.description')}
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() =>
+                        document
+                          .getElementById('estimateForm')
+                          ?.scrollIntoView({ behavior: 'smooth' })
+                      }
+                      sx={{ mt: 2 }}
+                    >
+                      {t('estimate.options_section.form_option.button')}
+                    </Button>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+
+          {/* Estimate Form */}
+          <Grid item xs={12}>
+            <Paper
+              elevation={0}
+              sx={{ p: { xs: 3, md: 4 }, border: `1px solid ${theme.palette.divider}` }}
+              id="estimateForm"
+            >
+              <Typography variant="h5" gutterBottom sx={{ fontFamily: 'Playfair Display', mb: 3 }}>
+                {t('estimate.form.title')}
+              </Typography>
+
+              <Grid container spacing={3}>
+                {/* Item Details */}
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom>
+                    {t('estimate.form.item_details')}
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <FormField
+                    required
+                    name="itemName"
+                    label={t('estimate.form.item_name')}
+                    value={formData.itemName}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    errors={errors}
+                    touched={touched}
+                    helperText={t('estimate.form.item_name_helper')}
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <FormField
+                    name="category"
+                    label={t('estimate.form.category')}
+                    options={categories.map(cat => ({
+                      value: cat,
+                      label: t(`catalogue.filters.categories.${cat.toLowerCase()}`, cat),
+                    }))}
+                    value={formData.category}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    errors={errors}
+                    touched={touched}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <FormField
+                    required
+                    name="description"
+                    label={t('estimate.form.description')}
+                    type="textarea"
+                    value={formData.description}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    errors={errors}
+                    touched={touched}
+                    helperText={t('estimate.form.description_helper')}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <FormControl component="fieldset">
+                    <FormLabel component="legend">{t('estimate.form.condition')}</FormLabel>
+                    <RadioGroup
+                      row
+                      name="condition"
+                      value={formData.condition}
+                      onChange={handleChange}
+                    >
+                      <FormControlLabel
+                        value="excellent"
+                        control={<Radio />}
+                        label={t('estimate.form.condition_excellent')}
+                      />
+                      <FormControlLabel
+                        value="good"
+                        control={<Radio />}
+                        label={t('estimate.form.condition_good')}
+                      />
+                      <FormControlLabel
+                        value="fair"
+                        control={<Radio />}
+                        label={t('estimate.form.condition_fair')}
+                      />
+                      <FormControlLabel
+                        value="poor"
+                        control={<Radio />}
+                        label={t('estimate.form.condition_poor')}
+                      />
+                    </RadioGroup>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      {t('estimate.form.photos')}
+                    </Typography>
+                    <Button variant="outlined" component="label" startIcon={<CloudUploadIcon />}>
+                      {t('estimate.form.upload_images')}
+                      <input type="file" hidden multiple accept="image/*" />
+                    </Button>
+                    <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                      {t('estimate.form.photos_helper')}
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12} sx={{ mt: 2 }}>
+                  <Divider />
+                </Grid>
+
+                {/* Contact Information */}
+                <Grid item xs={12} sx={{ mt: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    {t('estimate.form.contact_information')}
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <FormField
+                    required
+                    name="name"
+                    label={t('estimate.form.full_name')}
+                    value={formData.name}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    errors={errors}
+                    touched={touched}
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <FormField
+                    name="email"
+                    label={t('estimate.form.email')}
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    errors={errors}
+                    touched={touched}
+                    helperText={t('estimate.form.email_helper')}
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <FormField
+                    name="phone"
+                    label={t('estimate.form.phone')}
+                    value={formData.phone}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    errors={errors}
+                    touched={touched}
+                    helperText={t('estimate.form.phone_helper')}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <FormField
+                    name="additionalNotes"
+                    label={t('estimate.form.additional_notes')}
+                    type="textarea"
+                    value={formData.additionalNotes}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    errors={errors}
+                    touched={touched}
+                    helperText={t('estimate.form.additional_notes_helper')}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Alert severity="info" sx={{ mt: 2 }}>
+                    {t('estimate.form.info_message')}
+                  </Alert>
+                </Grid>
+
+                <Grid item xs={12} sx={{ mt: 2, textAlign: 'right' }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    size="large"
+                  >
+                    {loading ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      t('estimate.form.submit')
+                    )}
+                  </Button>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+        </Grid>
       )}
     </Container>
   );

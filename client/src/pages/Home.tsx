@@ -297,7 +297,7 @@ const Home = () => {
                           component={RouterLink}
                           to={`/product/${product._id}`}
                         >
-                          View Details
+                          {t('homepage.product_view_details')}
                         </Button>
                       </CardActions>
                     </Card>
@@ -444,16 +444,13 @@ const Home = () => {
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
               <Typography variant="h3" gutterBottom>
-                About Pischetola Antiques
+                {t('homepage.about_section.title')}
               </Typography>
               <Typography variant="body1" paragraph>
-                Pischetola Antiques has been a trusted name in the industry for over 30 years. Our
-                collection features carefully selected pieces that represent the finest
-                craftsmanship from various historical periods.
+                {t('homepage.about_section.paragraph1')}
               </Typography>
               <Typography variant="body1" paragraph>
-                Each item in our inventory has been authenticated and restored by our team of
-                experts, ensuring both historical accuracy and exceptional quality.
+                {t('homepage.about_section.paragraph2')}
               </Typography>
               <Button
                 variant="outlined"
@@ -463,7 +460,7 @@ const Home = () => {
                 endIcon={<ArrowForwardIcon />}
                 sx={{ mt: 2 }}
               >
-                Learn More About Us
+                {t('homepage.about_section.button')}
               </Button>
             </Grid>
             <Grid item xs={12} md={6}>
@@ -493,11 +490,10 @@ const Home = () => {
           }}
         >
           <Typography variant="h3" gutterBottom>
-            Request an Estimate
+            {t('homepage.estimate_section.title')}
           </Typography>
           <Typography variant="body1" sx={{ mb: 4, maxWidth: '800px', mx: 'auto' }}>
-            Have an antique item you'd like to sell or get appraised? Our team of experts can
-            provide you with a detailed estimate of its value.
+            {t('homepage.estimate_section.description')}
           </Typography>
           <Button
             variant="contained"
@@ -507,7 +503,7 @@ const Home = () => {
             size="large"
             sx={{ px: 4 }}
           >
-            Request Estimate
+            {t('homepage.estimate_section.button')}
           </Button>
         </Box>
       </Container>

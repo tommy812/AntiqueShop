@@ -21,7 +21,19 @@
     "categories": {
       "title": "Browse by Category",
       "view_all": "View All Categories"
-    }
+    },
+    "about_section": {
+      "title": "About Pischetola Antiques",
+      "paragraph1": "Pischetola Antiques has been a trusted name in the industry for over 30 years. Our collection features carefully selected pieces that represent the finest craftsmanship from various historical periods.",
+      "paragraph2": "Each item in our inventory has been authenticated and restored by our team of experts, ensuring both historical accuracy and exceptional quality.",
+      "button": "Learn More About Us"
+    },
+    "estimate_section": {
+      "title": "Request an Estimate",
+      "description": "Have an antique item you'd like to sell or get appraised? Our team of experts can provide you with a detailed estimate of its value.",
+      "button": "Request Estimate"
+    },
+    "product_view_details": "View Details"
   },
   "product": {
     "dimensions": "Dimensions",
@@ -68,28 +80,143 @@
     "success": "Your message has been sent successfully. We'll get back to you soon.",
     "error": "There was an error sending your message. Please try again."
   },
-  "estimate": {
-    "title": "Get an Estimate",
-    "subtitle": "Looking to sell? Submit your item for an expert evaluation.",
-    "form": {
-      "name": "Name",
-      "email": "Email",
-      "phone": "Phone Number",
-      "item_description": "Item Description",
-      "dimensions": "Dimensions (optional)",
-      "age": "Approximate Age/Period (if known)",
-      "photos": "Upload Photos",
-      "additional_info": "Additional Information",
-      "submit": "Request Estimate"
-    },
-    "success": "Your estimate request has been submitted. Our experts will contact you shortly.",
-    "error": "There was an error submitting your request. Please try again."
-  },
   "about": {
     "title": "About Pischetola Antiques",
-    "our_story": "Our Story",
-    "expertise": "Our Expertise",
-    "team": "Our Team"
+    "subtitle": "A legacy of excellence in antique collection and restoration since 1985",
+    "our_story": {
+      "title": "Our Story",
+      "paragraph1": "Pischetola Antiques was founded in 1985 by Antonio Pischetola, a passionate collector with a keen eye for historical craftsmanship and authenticity. What began as a small collection in a modest shop in Florence, Italy, has evolved into a respected establishment in the world of fine antiques.",
+      "paragraph2": "For over three decades, we have dedicated ourselves to preserving the beauty and history of exceptional pieces from various periods and regions. Our commitment to quality, authenticity, and customer satisfaction has made us a trusted name among collectors, interior designers, and antique enthusiasts worldwide.",
+      "paragraph3": "Today, Pischetola Antiques continues to be a family-owned business, carrying forward Antonio's legacy of passion and expertise into the digital age, making our curated collection accessible to a global audience."
+    },
+    "expertise": {
+      "title": "Our Expertise",
+      "authentication": {
+        "title": "Authentication",
+        "description": "Every piece in our collection undergoes rigorous authentication by our team of experts to ensure its provenance and historical accuracy."
+      },
+      "restoration": {
+        "title": "Restoration",
+        "description": "Our skilled craftsmen carefully restore each piece using traditional techniques and materials that honor the original craftsmanship."
+      },
+      "documentation": {
+        "title": "Documentation",
+        "description": "We provide detailed documentation for each item, including its history, origin, period, and any restoration work performed."
+      },
+      "shipping": {
+        "title": "Worldwide Shipping",
+        "description": "We offer secure, insured shipping services to ensure your treasured purchases arrive safely at your doorstep, anywhere in the world."
+      }
+    },
+    "team": {
+      "title": "Meet Our Team",
+      "members": {
+        "marco": {
+          "name": "Marco Pischetola",
+          "role": "Owner & Chief Curator",
+          "bio": "Son of founder Antonio Pischetola, Marco has been immersed in the world of antiques since childhood and has developed an extraordinary eye for exceptional pieces."
+        },
+        "davide": {
+          "name": "Davide Pischetola",
+          "role": "Master Restorer",
+          "bio": "With over 20 years of experience in antique restoration, Davide brings traditional craftsmanship techniques to preserve and restore our finest pieces."
+        },
+        "stefano": {
+          "name": "Stefano Pischetola",
+          "role": "Authentication Specialist",
+          "bio": "Stefano combines his deep knowledge of art history with modern authentication techniques to ensure the authenticity and provenance of every piece in our collection."
+        }
+      }
+    },
+    "visit": {
+      "title": "Visit Our Showroom",
+      "description": "We invite you to experience our collection in person at our showroom in the heart of Florence.",
+      "address": "Via dei Fossi, 50, 50123 Florence, Italy",
+      "hours": "Monday to Saturday: 10:00 AM - 6:00 PM",
+      "contact": "+39 055 1234567 | info@pischetolaantiques.com"
+    }
+  },
+  "estimate": {
+    "title": "Request an Estimate",
+    "subtitle": "If you have antiques or collectibles that you're looking to sell, we'd be happy to provide a free estimate of their value.",
+    "items_section": {
+      "title": "Types of Items We May Purchase",
+      "description": "We're interested in acquiring a wide range of antiques and collectibles. Here are some examples of items we typically consider:",
+      "furniture": {
+        "title": "Antique Furniture",
+        "description": "Furniture from various periods and styles, particularly from the 18th to mid-20th century."
+      },
+      "paintings": {
+        "title": "Paintings & Fine Art",
+        "description": "Original paintings, drawings, and fine art from different movements and eras."
+      },
+      "decorative": {
+        "title": "Decorative Arts",
+        "description": "Clocks, mirrors, bronzes, sculptures, and other decorative objects."
+      },
+      "silver": {
+        "title": "Silver & Jewelry",
+        "description": "Antique silver pieces, jewelry, and precious metal objects with historical or artistic value."
+      },
+      "ceramics": {
+        "title": "Ceramics & Porcelain",
+        "description": "Fine porcelain, ceramics, and pottery from renowned makers and traditions."
+      }
+    },
+    "options_section": {
+      "title": "How Would You Like to Proceed?",
+      "contact_option": {
+        "title": "Contact Us Directly",
+        "description": "If you prefer to speak with someone directly about your items, you can reach out to our team through our contact page.",
+        "button": "Go to Contact Page"
+      },
+      "form_option": {
+        "title": "Use the Form Below",
+        "description": "Fill out our simple estimate request form to provide details about your item and we'll get back to you with an estimate.",
+        "button": "Go to Form"
+      }
+    },
+    "form": {
+      "title": "Estimate Request Form",
+      "item_details": "Item Details",
+      "item_name": "Item Name",
+      "item_name_helper": "Enter a descriptive name",
+      "category": "Category",
+      "description": "Description",
+      "description_helper": "Please include details about size, materials, and any markings or signatures",
+      "condition": "Condition",
+      "condition_excellent": "Excellent",
+      "condition_good": "Good",
+      "condition_fair": "Fair",
+      "condition_poor": "Poor/Damaged",
+      "photos": "Photos",
+      "upload_images": "Upload Images",
+      "photos_helper": "You can upload up to 5 images (max 5MB each)",
+      "contact_information": "Your Contact Information",
+      "full_name": "Full Name",
+      "email": "Email",
+      "email_helper": "Please provide either email or phone",
+      "phone": "Phone",
+      "phone_helper": "Please provide either email or phone",
+      "additional_notes": "Additional Notes",
+      "additional_notes_helper": "Any other information you'd like to share",
+      "submit": "Submit Request",
+      "info_message": "By submitting this form, you're requesting an estimate for your item. Our experts will review your information and get back to you within 2-3 business days."
+    },
+    "thank_you": {
+      "title": "Thank You!",
+      "message1": "Your estimate request has been submitted successfully.",
+      "message2": "One of our experts will review your information and get back to you shortly. If you have any urgent questions, please don't hesitate to contact us directly.",
+      "button": "Return to Homepage"
+    },
+    "validation": {
+      "item_name_required": "Item name is required",
+      "description_required": "Description is required",
+      "description_short": "Please provide a more detailed description (at least 10 characters)",
+      "name_required": "Name is required",
+      "contact_required": "Please provide either email or phone number",
+      "email_invalid": "Invalid email address"
+    }
   },
   "language": {
     "select": "Select Language",
