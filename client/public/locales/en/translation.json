@@ -60,7 +60,28 @@
       "price_low": "Price: Low to High",
       "price_high": "Price: High to Low"
     },
-    "no_products": "No products found matching your criteria."
+    "no_products": "No products found matching your criteria.",
+    "subtitle": "Explore our collection of fine antiques. Each piece has been carefully selected for its quality, authenticity, and historical significance.",
+    "search_placeholder": "Search by name, description, or keywords...",
+    "show_filters": "Show Filters",
+    "showing_items": "Showing {{count}} of {{total}} items",
+    "loading_products": "Loading products...",
+    "no_results_title": "No products found",
+    "no_results_subtitle": "Try changing your search or filter criteria",
+    "filter_sections": {
+      "category": "Category",
+      "period": "Period",
+      "price_range": "Price Range",
+      "all_categories": "All Categories",
+      "all_periods": "All Periods"
+    },
+    "price_ranges": {
+      "any": "Any Price",
+      "under": "Under €1,000",
+      "range1": "€1,000 - €2,000",
+      "range2": "€2,000 - €5,000",
+      "over": "Over €5,000"
+    }
   },
   "footer": {
     "copyright": "© {{year}} Pischetola Antiques. All rights reserved.",
@@ -78,7 +99,28 @@
       "submit": "Send Message"
     },
     "success": "Your message has been sent successfully. We'll get back to you soon.",
-    "error": "There was an error sending your message. Please try again."
+    "error": "There was an error sending your message. Please try again.",
+    "get_in_touch": "Get in Touch",
+    "location": "Our Location",
+    "phone": "Phone",
+    "email_label": "Email",
+    "opening_hours": "Opening Hours",
+    "follow_us": "Follow Us",
+    "send_message": "Send Us a Message",
+    "your_name": "Your Name",
+    "email_address": "Email Address",
+    "phone_number": "Phone Number",
+    "phone_helper": "Optional, but helpful for urgent inquiries",
+    "your_message": "Your Message",
+    "validation": {
+      "name_min": "Must be at least 2 characters",
+      "email_valid": "Must be a valid email address",
+      "message_min": "Must be at least 10 characters"
+    },
+    "sending": "Sending...",
+    "send": "Send Message",
+    "success_alert": "Your message has been sent. We will get back to you soon!",
+    "error_alert": "An error occurred. Please try again."
   },
   "about": {
     "title": "About Pischetola Antiques",
