@@ -76,6 +76,39 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// MongoDB keepalive - keeps Atlas cluster from pausing (call monthly via cron)
+// Secured by CRON_SECRET when invoked by Vercel Cron, or KEEPALIVE_SECRET for external crons
+app.get('/api/cron/keepalive', async (req, res) => {
+  const authHeader = req.headers.authorization;
+  const cronSecret = process.env.CRON_SECRET || process.env.KEEPALIVE_SECRET;
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const connected = await connectDB();
+    if (!connected) {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to connect to MongoDB',
+      });
+    }
+    await mongoose.connection.db.admin().ping();
+    res.json({
+      success: true,
+      message: 'MongoDB keepalive successful',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('Keepalive error:', err);
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
 // Root route
 app.get('/', (req, res) => {
   res.json({
